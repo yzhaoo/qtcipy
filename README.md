@@ -11,7 +11,7 @@ Some of the examples use the library for electronic structure [pyqula](https://g
 # Installation
 
 You need to have Julia installed in your computer, and the libraries
-QuanticsTCI, QuanticsGrids, PyCall that you can be installed with
+QuanticsTCI, QuanticsGrids, and PyCall that can be installed with
 using Pkg; Pkg.add("QuanticsTCI") ; Pkg.add("PyCall") ; Pkg.add("QuanticsGrids")
 
 Your Python distribution need to have Julia installed, that can be done with
