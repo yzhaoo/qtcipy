@@ -3,7 +3,7 @@ from .juliasession import Main
 
 class Interpolator():
     def __init__(self,f,xlim=[0.,1.],nb=20,tol=1e-2,dim=1,
-            ylim=[0.,1.],zlim=[0.,1.]):
+            ylim=[0.,1.],zlim=[0.,1.],guess=None):
         """Initialize the interpolator object"""
 # Pass the Python function and variables to the Julia function
         if dim==1:
