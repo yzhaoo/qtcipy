@@ -31,4 +31,15 @@ def integrate_x(self,return_qtci=False):
 
 
 
+def qtci_integrate(f,xlim=[0.,1.],tol=1e-6,nb=30,ylim=None):
+    """Integrate a function using quantics tensor cross inteprolation"""
+    from .interpolate import Interpolator
+    if ylim is None:
+        fci = Interpolator(f,tol=tol,nb=nb,xlim=xlim,dim=1)
+    else:
+        fci = Interpolator(f,tol=tol,nb=nb,xlim=xlim,
+                ylim=ylim,dim=2)
+    return fci.integrate()
+
+
 
