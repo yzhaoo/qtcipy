@@ -11,7 +11,8 @@ def install():
         result = subprocess.run(['which', 'julia'], stdout=subprocess.PIPE)
         return result.stdout.decode('utf-8').strip()
     julia_path = get_julia_path()
-    os.environ["JULIA_BINDIR"] = julia_path
+#    print(julia_path) ; exit()
+#    os.environ["JULIA_BINDIR"] = julia_path
     # Define a Julia function within Python
     path = os.path.dirname(os.path.realpath(__file__))
     os.system(julia_path+" "+path+"/install.jl")
