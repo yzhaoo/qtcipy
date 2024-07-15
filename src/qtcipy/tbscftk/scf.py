@@ -13,7 +13,8 @@ class SCF_Hubbard():
             ddn0 = -dup0.copy() # initialize
             MF = [dup0,ddn0] # store
         self.MF = MF # store the mean-field guess
-        self.U = U # Hubbard interaction 
+        set_Hubbard(self,U) # set the Hubbard
+#        self.U = U # Hubbard interaction 
         self.Mz = MF[0]*0. # magnetization
         log = dict() # dictionary
         log["SCF_error"] = [] # initialize
@@ -45,6 +46,28 @@ class SCF_Hubbard():
         (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
         (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
         return es,dup+ddn # return energy and DOS
+    def get_spin_dos_i(self,w=None,**kwargs):
+        """Compute the DOS in site i"""
+        from .kpmrho import get_dos_i
+        if w is None: w = np.linspace(-5.,5.,1000)
+        (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
+        (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
+        return es,dup-ddn # return energy and DOS
+
+
+
+
+def set_Hubbard(self,U):
+    """Process the Hubbard interaction"""
+    if type(U)==np.array: # if array
+        if len(self.H.H)==U.shape[0]:
+            self.U = U # store as array
+        else: raise
+    elif callable(U):
+        Ua = [U(ri) for ri in self.H0.R] # callable
+        self.U = Ua
+    else: # assume that it is a float
+        self.U = U # store as float
 
 
 

@@ -11,9 +11,9 @@ class Hamiltonian():
         """Return the SCF object"""
         from .scf import SCF_Hubbard
         return SCF_Hubbard(self,**kwargs)
-    def modify_hopping(self,*args):
+    def modify_hopping(self,*args,**kwargs):
         return modify_hopping(self,*args)
-    def add_onsite(self,*args):
+    def add_onsite(self,*args,**kwargs):
         return add_onsite(self,*args)
     def get_density_i(self,**kwargs):
         from .hubbard import get_density_i
@@ -46,9 +46,20 @@ def chain(L):
 
 
 
-def modify_hopping(H):
+def modify_hopping(self,f,**kwargs):
     """Modify the hoppings of a Hamiltonian"""
-    return
+    from scipy.sparse import coo_matrix
+    m = self.H.copy() # get the matrix
+    R = self.R # positions
+    mo = coo_matrix(m) # to coo_matrix
+    for i in range(len(mo.data)): # loop over non-zero elements
+        ii = mo.row[i] # get this row
+        jj = mo.col[i] # get this column
+        d = mo.data[i] # get this data
+        r = (R[ii] + R[jj])/2. # average location
+        d1 = d + f(r) # add a contribution
+        m[ii,jj] = d1 # store the new hopping
+    self.H = m # store the new Hamiltonian
 
 
 

@@ -83,8 +83,8 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
     t0 = time.time() # get the time
     while True: # infinite loop
         ite += 1 # iteration
-        hup = h0 + U*diags(ddn_old-0.5,shape=h0.shape) # up Hamiltonian
-        hdn = h0 + U*diags(dup_old-0.5,shape=h0.shape) # down Hamiltonian
+        hup = h0 + diags(U*(ddn_old-0.5),shape=h0.shape) # up Hamiltonian
+        hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian
         ddn = get_den(hdn,log=log0,**kwargs) # generate down density
         dup = get_den(hup,log=log0,**kwargs) # generate up density
         error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
