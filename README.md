@@ -10,12 +10,8 @@ Some of the examples use the library for electronic structure [pyqula](https://g
 
 # Installation
 
-You need to have Julia installed in your computer, and the libraries
-QuanticsTCI, QuanticsGrids, TensorCrossInterpolation, and PyCall that can be installed with
-using Pkg; Pkg.add("QuanticsTCI") ; Pkg.add("PyCall") ; Pkg.add("TensorCrossInterpolation") ; Pkg.add("QuanticsGrids")
-
-Your Python distribution need to have Julia installed, that can be done with
-pip install julia
+You need to have Julia installed in your computer.
+Afterwards, execute "python install.py" in the current directory
 
 Julia needs to be in your PATH, as the code will use the output of "which julia"
 

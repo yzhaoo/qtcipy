@@ -7,7 +7,7 @@ class SCF_Hubbard():
     def __init__(self,H,MF=None,U=0.):
         """Initialize the SCF object"""
         self.H0 = H # store initial Hamiltonian
-        self.H = [H.copy(),H.copy()] # store initial Hamiltonian
+        self.H = [H.H.copy(),H.H.copy()] # store initial Hamiltonian
         if MF is None:
             dup0 = 0.2*np.array([(-1)**i for i in range(H.H.shape[0])])
             ddn0 = -dup0.copy() # initialize
@@ -53,6 +53,12 @@ class SCF_Hubbard():
         (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
         (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
         return es,dup-ddn # return energy and DOS
+    def save(self,**kwargs):
+        from .saveload import save_SCF
+        save_SCF(self,**kwargs)
+    def load(self,**kwargs):
+        from .saveload import load_SCF
+        return load_SCF(**kwargs)
 
 
 
