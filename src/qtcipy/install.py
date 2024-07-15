@@ -2,9 +2,9 @@
 
 def install():
     """Install all the required Julia libraries"""
-    from julia import Julia
-    Julia(compiled_modules=False)  # Initialize Julia
-    from julia import Main
+#    from julia import Julia
+#    Julia(compiled_modules=False)  # Initialize Julia
+#    from julia import Main
     import os
     import subprocess
     def get_julia_path():
