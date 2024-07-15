@@ -1,7 +1,6 @@
-
-	using Pkg
-	Pkg.add("QuanticsTCI") 
-	Pkg.add("PyCall") 
-	Pkg.add("TensorCrossInterpolation") 
-	Pkg.add("QuanticsGrids")
+using Pkg
+Pkg.add("PyCall") 
+Pkg.add("QuanticsTCI") 
+Pkg.add("TensorCrossInterpolation") 
+Pkg.add("QuanticsGrids")
 

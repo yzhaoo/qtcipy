@@ -14,8 +14,7 @@ def install():
     os.environ["JULIA_BINDIR"] = julia_path
     # Define a Julia function within Python
     path = os.path.dirname(os.path.realpath(__file__))
-
-    Main.eval(open(path+"/install.jl").read())
+    os.system(julia_path+" "+path+"/install.jl")
 
 
 
