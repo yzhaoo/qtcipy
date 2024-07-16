@@ -38,7 +38,8 @@ def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
     def f(i): # function to interpolate
         return get_density_i(h,i=int(i),**kwargs)
     xlim = [0,h.shape[0]] # limits of the interpolation
-    nb = np.log(h.shape[0])/np.log(2) # number of sites
+    nb = np.log(h.shape[0])/np.log(2) # number of pseudospin sites
+    nat = h.shape[0] # number of atoms
     if np.abs(int(nb)-nb)>1e-5:
         print("Number of points must be a power of 2")
         raise
@@ -50,9 +51,9 @@ def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
     if info_qtci:
          print(len(rse)/h.shape[0],"ratio of evaluations")
-    return np.array([IP(float(i)) for i in range(0,h.shape[0])])
-
-
+    out = np.zeros(nat,dtype=np.float_) # initialize
+    for i in range(nat): out[i] = IP(float(i)) # store result
+    return out # return the output
 
 
 

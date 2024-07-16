@@ -15,7 +15,7 @@ def testimate1d_qtci(h):
     from .. import interpolate
     t0 = time.time() # initial time
     IP = interpolate.Interpolator(f,tol=1e-3,nb=nb,xlim=xlim,dim=1)
-    out = np.array([IP(float(i)) for i in range(0,h.shape[0])])
+#    out = np.array([IP(float(i)) for i in range(0,h.shape[0])])
     t1 = time.time() # get the time
     rse,zse = IP.get_evaluated()
     fac = len(rse)/h.shape[0] # ratio of evaluations
