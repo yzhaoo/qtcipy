@@ -13,6 +13,26 @@ function initialize_interpolator_1d(f, xmin, xmax,nb,tol)
     return ci, ranks, errors, qgrid
 end
 
+# this is commented until the parallelization is done
+
+#
+#function initialize_interpolator_1d_batch(fbatch, xmin, xmax,nb,tol; batch_size=6)
+#    # input of fbatch is [x1,x2,..,x_batch], and returns
+#    # fbatch([x1,x2,..,x_batch]) = [f(x1),...,f(x_batch)]
+#    # where f is the original function that takes one point and returns
+#    # a single point
+#    R = nb # number of bits
+#    N = 2^R # size of the grid
+#    qgrid = QG.DiscretizedGrid{1}(R, xmin, xmax; includeendpoint=false)
+#    ci, ranks, errors = quanticscrossinterpolate_batch(Float64, fbatch, qgrid;
+#    batch_size = 10, # how many points at the same time does fbatch return
+#    tolerance=tol,
+#    normalizeerror=true, # Normalize the error by the maximum sample value,
+#    loginterval=1) # Log the error every `loginterval` iterations)
+#    return ci, ranks, errors, qgrid
+#end
+#
+
 
 
 function initialize_interpolator_2d(f, xmin, xmax,ymin,ymax,nb,tol)

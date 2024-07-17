@@ -2,11 +2,12 @@ import numpy as np
 
 class Hamiltonian():
     """Class for a Hamiltonian"""
-    def __init__(self,dim=1,H=None,R=None):
+    def __init__(self,dim=1,H=None,R=None,AB=None):
         """Class for a Hamiltonian"""
         self.dim = 1 # dimensionality
         self.H = H # matrix
         self.R = R # locations
+        self.AB = AB # sublattice
     def get_SCF_Hubbard(self,**kwargs):
         """Return the SCF object"""
         from .scf import SCF_Hubbard
@@ -40,8 +41,75 @@ def chain(L):
     h0 = h0 + h0.T # add the transpose
     r = np.zeros((n,2),dtype=np.float_) # initialize
     r[:,0] = np.arange(n) # locations
-    H = Hamiltonian(dim=1,H=h0,R=r) # create Hamiltonian
+    AB = np.array(np.arange(0,n))%2 # parity
+    AB = AB*2 - 1. # +- 1
+    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
     return H # return the Hamiltonian
+
+
+
+def square(L):
+    """Hamiltonian of a square lattice"""
+    # define a first neighbor tight binding model
+    n = 2**L # number of sites
+    row,col,data = hopping_square(n) # return the hoppings
+    from scipy.sparse import csc_matrix
+    h0 = csc_matrix((data,(row,col)),shape=(n**2,n**2),dtype=np.complex_) # create single particle hopping
+    r,AB = position_square(n) # return the positions for square lattice
+    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
+    return H # return the Hamiltonian
+
+
+from numba import jit
+
+# Hopping for the square lattice
+@jit(nopython=True)
+def hopping_square(N):
+    """Return hopping for the square lattice"""
+    count = 0
+    row = np.zeros(4*N**2,dtype=np.int_) # index
+    col = np.zeros(4*N**2,dtype=np.int_) # index
+    data = np.zeros(4*N**2,dtype=np.float_) # index
+    for i1 in range(N):
+      for j1 in range(N):
+          ind1 = i1*N + j1 # index for the first site 
+          for di,dj in [[-1,0],[1,0],[0,1],[0,-1]]:
+                i2 = i1 + di
+                j2 = j1 + dj
+                ind2 = i2*N + j2 # index for the second side
+                if 0<=i2<N and 0<=j2<N: # no overflow
+                    row[count] = ind1 # store index
+                    col[count] = ind2 # store index
+                    data[count] = 1.0 # store hopping
+                    count +=1 # increase counter
+    row = row[0:count] # only those stored
+    col = col[0:count] # only those stored
+    data = data[0:count] # only those stored
+    return row,col,data # return rows,cols and data
+
+
+
+# position for the square lattice
+@jit(nopython=True)
+def position_square(N):
+    """Return hopping for the square lattice"""
+    count = 0
+    r = np.zeros((N**2,2),dtype=np.float_) # index
+    AB = np.zeros(N**2,dtype=np.float_) # index
+    for i1 in range(N): # first loop 
+      for j1 in range(N): # second loop 
+          r[count,0] = float(i1)
+          r[count,1] = float(j1)
+          AB[count] =  (-1)**i1*(-1)**j1 # sublattice
+          count += 1 # increase counter
+    return r,AB
+
+
+
+
+
+
+
 
 
 
@@ -71,5 +139,95 @@ def add_onsite(self,f):
     from scipy.sparse import csc_matrix
     h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.complex_)
     self.H = self.H + h0 # add the onsite energy
+
+
+
+
+#########################
+### Honeycomb lattice ###
+#########################
+
+
+def honeycomb(L,periodic=False):
+    """Hamiltonian of a honeycomb lattice"""
+    # define a first neighbor tight binding model
+    n = 2**L # number of unit cells
+    row,col,data = hopping_honeycomb(n,periodic=periodic) # return the hoppings
+    from scipy.sparse import csc_matrix
+    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # create single particle hopping
+    r,AB = position_honeycomb(n) # return the positions for square lattice
+    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
+    return H # return the Hamiltonian
+
+
+
+# Hopping for the square lattice
+@jit(nopython=True)
+def hopping_honeycomb(N,periodic=False):
+    """Return hopping for the honeycomb lattice"""
+    count = 0 # counter
+    row = np.zeros(4*3*N**2,dtype=np.int_) # index
+    col = np.zeros(4*3*N**2,dtype=np.int_) # index
+    data = np.zeros(4*3*N**2,dtype=np.float_) # index
+    for i1 in range(N): # loop over x unit cell index
+      for j1 in range(N): # loop over y unit cell index
+          ind1 = i1*N + j1 # index for the first UC 
+          for di,dj in [[0,0],[-1,0],[1,0],[0,1],[0,-1]]: # loop over neigh unit cells
+                i2 = i1 + di
+                j2 = j1 + dj
+                if periodic: # periodic boundary conditions
+                    i2 = i2%N
+                    j2 = j2%N
+                ind2 = i2*N + j2 # index for the second UC
+                if 0<=i2<N and 0<=j2<N: # no overflow of unit cells
+                    # now loop over the orbitals in the unit cell
+                    # do it case by case
+                    ## in the (0,0) direction
+                    if di==0 and dj==0:
+                        pairs = [[0,1],[1,0],[1,2],[2,1],[3,2],[2,3]] # onsite
+                    if di==1 and dj==0:  pairs = [[3,0]]
+                    if di==-1 and dj==0:  pairs = [[0,3]]
+                    if di==0 and dj==1:  pairs = [[1,0],[2,3]]
+                    if di==0 and dj==-1:  pairs = [[0,1],[3,2]]
+                    for o1,o2 in pairs: # store the pairs
+                        row[count] = 4*ind1 + o1 # store index
+                        col[count] = 4*ind2 + o2 # store index
+                        data[count] = 1.0 # store hopping
+                        count +=1 # increase counter
+    row = row[0:count] # only those stored
+    col = col[0:count] # only those stored
+    data = data[0:count] # only those stored
+    return row,col,data # return rows,cols and data
+
+
+# position for the square lattice
+@jit(nopython=True)
+def position_honeycomb(N):
+    """Return hopping for the square lattice"""
+    count = 0
+    r = np.zeros((4*N**2,2),dtype=np.float_) # index
+    AB = np.zeros(4*N**2,dtype=np.float_) # index
+    a1 = np.array([3.,0.]) # shift in x
+    a2 = np.array([0.,np.sqrt(3.)]) # shift in y
+    for i1 in range(N): # first loop 
+      for j1 in range(N): # second loop 
+          dr = float(i1)*a1 + float(j1)*a2 # shift
+          r[4*count] = dr # shift
+          r[4*count+1] = dr + a2/2. + np.array([.5,.0]) # shift
+          r[4*count+2] = dr + a2/2. + np.array([1.5,.0]) # shift
+          r[4*count+3] = dr + np.array([2.,.0]) # shift
+          for io in range(4):
+              AB[4*count+io] =  (-1)**i1*(-1)**j1*(-1)**io # sublattice
+          count += 1 # increase counter
+    return r,AB
+
+
+
+
+
+
+
+
+
 
 

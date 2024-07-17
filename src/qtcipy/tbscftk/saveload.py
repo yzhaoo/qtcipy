@@ -60,9 +60,10 @@ def dict2H(objs):
     """Transform a dictionary into a Hamiltonian"""
     from .hamiltonians import Hamiltonian
     R = objs["R"] # positions
+    AB = objs["AB"] # positions
     H = objs["H"] # Hamiltonian
     dim = objs["dim"] # dimension
-    Hout = Hamiltonian(dim=dim,H=H,R=R) # Hamiltonian
+    Hout = Hamiltonian(dim=dim,H=H,R=R,AB=AB) # Hamiltonian
     return Hout # return Hamiltonian
 
 
@@ -71,6 +72,7 @@ def H2dict(H):
     """Transform a Hamiltonian into a dictionary"""
     objs = dict() # dictionary
     objs["R"] = H.R # positions
+    objs["AB"] = H.AB # positions
     objs["H"] = H.H # Hamiltonian
     objs["dim"] = H.dim  # dimension
     return objs # return dictionary

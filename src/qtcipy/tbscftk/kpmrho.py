@@ -23,12 +23,14 @@ def memoize(func):
 
 
 
-def get_den_kpm_qtci(h,dim=1,**kwargs):
+def get_den_kpm_qtci(h,**kwargs):
     """Return the full density using QTCI"""
-    if dim==1: # 1d geometry
-        return get_den_kpm_qtci_1d(h,**kwargs)
-    elif dim==2: # 2d geometry
-        return get_den_kpm_qtci_2d(h,**kwargs)
+#        return get_den_kpm_qtci_1d(h,**kwargs)
+    return get_den_kpm_qtci_general(h,**kwargs)
+#    if dim==1: # 1d geometry
+#        return get_den_kpm_qtci_1d(h,**kwargs)
+#    elif dim==2: # 2d geometry
+#        return get_den_kpm_qtci_2d(h,**kwargs)
 
 
 
@@ -59,31 +61,106 @@ def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
 
 
 
-def get_den_kpm_qtci_2d(h,info_qtci=False,**kwargs):
+def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
-    ncells = int(np.round(np.sqrt(h.shape[0]))) # number of cells
-#    @memoize
-    def f(ii,jj): # function to interpolate
-        i = ncells*ii + jj # convert 2d index to 1d
-        return get_density_i(h,i=int(i),**kwargs)
-    xlim = [0,ncells] # limits of the interpolation
-    ylim = [0,ncells] # limits of the interpolation
-    nb = np.log(h.shape[0])/np.log(2)/2. # number of sites
+    f = get_function(h,**kwargs) # get the function to interpolate
+    nb = get_nbits(h,**kwargs) # return the number of bits
+    lim = get_lim(h,**kwargs) # get the limits
+    IP = get_interpolator(h,f,nb,lim,**kwargs) # keyword arguments
+    if log is not None: # make a log
+        rse,zse = IP.get_evaluated()
+        log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
+    if info_qtci:
+         print(len(rse)/h.shape[0],"ratio of evaluations")
+    out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
+    return out # return the output
+
+
+def evaluate_interpolator(h,IP,dim=1,**kwargs):
+    nat = h.shape[0]
+    if dim==1: # 1D
+        out = np.zeros(nat,dtype=np.float_) # initialize
+        for i in range(nat): out[i] = IP(float(i)) # store result
+        return out
+    elif dim==2: # 2D
+        print("Using 2D")
+        n = int(np.sqrt(nat)) # lateral size of the system
+        out = np.zeros(nat,dtype=np.float_) # initialize
+        for i in range(n): 
+            for j in range(n): 
+                ii = n*i + j # index in real space
+                out[ii] = IP(float(i),float(j)) # store result
+        return out
+    else: raise
+
+
+
+def get_interpolator(h,f,nb,lim,dim=1,qtci_tol=1e-3,**kwargs):
+    """Return the interpolator"""
+    from .. import interpolate
+    if dim==1: # one dimensional
+        IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],dim=1)
+    elif dim==2: # two dimensional
+        IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
+                ylim=lim[1],dim=2)
+    else: raise # error otherwise
+    return IP # return the interpolator
+
+
+
+
+def get_lim(h,dim=1,**kwargs):
+    """Return the limits"""
+    if dim==1: # one dimensional
+        xlim = [0,h.shape[0]] # limits of the interpolation
+        return xlim,None
+    elif dim==2: # two dimensional
+        n = h.shape[0] # number of sites
+        n = int(np.sqrt(n)) # lateral size of the system
+        xlim = [0,n] # limits of the interpolation
+        return xlim,xlim # return the limits
+    else: raise # not implemented
+
+
+
+
+def get_nbits(h,dim=1,**kwargs):
+    """Get the number of required bits"""
+    n = h.shape[0] # number of sites
+    if dim==1: pass # ignore for 1d
+    elif dim==2: # 2d
+      n = int(np.sqrt(n)) # lateral size of the system
+    else: raise
+    nb = np.log(n)/np.log(2) # number of pseudospin sites
     if np.abs(int(nb)-nb)>1e-5:
         print("Number of points must be a power of 2")
         raise
-    nb = int(nb) # number of points
-    from . import interpolate
-    IP = interpolate.Interpolator(f,tol=1e-3,nb=nb,xlim=xlim,
-            ylim=ylim,dim=2)
-    if info_qtci:
-         print(len(rse)/h.shape[0],"ratio of evaluations")
-    out = np.zeros(h.shape[0]) # initialize
-    for i in range(ncells*ncells): # loop over sites
-        ii = i//ncells # floor division
-        jj = i%ncells # residue
-        out[i] = IP(float(ii),float(jj))
-    return out # return the interpoalted result
+    return int(nb) # return number of bits 
+
+
+
+def get_function(h,dim=1,**kwargs):
+    """Return the function to interpolate"""
+    @memoize
+    def f1d(i): # function to interpolate
+        return get_density_i(h,i=int(i),**kwargs)
+    @memoize
+    def f2d(i,j): # function to interpolate
+        n = h.shape[0] # number of sites
+        n = int(np.sqrt(n)) # lateral size of the system
+        ii = n*i + j # index in real space
+        return get_density_i(h,i=int(ii),**kwargs)
+    if dim==1: return f1d
+    elif dim==2: return f2d
+    else: raise
+
+
+
+
+
+
+
+
 
 
 import os ; import sys

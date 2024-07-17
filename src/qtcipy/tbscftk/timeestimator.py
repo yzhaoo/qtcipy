@@ -23,11 +23,40 @@ def testimate1d_qtci(h):
 
 
 
-def testimate(h,dim=1,norb=1,estimate_rho=True,**kwargs):
+def get_function_dummy(h,dim=1,**kwargs):
+    """Return the function to interpolate"""
+    def f1d(i): # function to interpolate
+        i = int(i)
+        return h[i,i] # element of the matrix
+    def f2d(i,j): # function to interpolate
+        n = h.shape[0] # number of sites
+        n = int(np.sqrt(n)) # lateral size of the system
+        ii = n*i + j # index in real space
+        return h[ii,ii] # element of the matrix
+    if dim==1: return f1d
+    elif dim==2: return f2d
+    else: raise
+
+
+
+def testimate_qtci_general(h,dim=1,**kwargs):
+    """Return the electronic density of the system uisng KPM and QTCI"""
+    f = get_function_dummy(h,**kwargs) # get the function to interpolate
+    from .kpmrho import get_nbits,get_lim,get_interpolator
+    nb = get_nbits(h,**kwargs) # return the number of bits
+    lim = get_lim(h,**kwargs) # get the limits
+    t0 = time.time() # initial time
+    IP = get_interpolator(h,f,nb,lim,**kwargs) # keyword arguments
+    t1 = time.time() # get the time
+    rse,zse = IP.get_evaluated()
+    fac = len(rse)/h.shape[0] # ratio of evaluations
+    return fac,t1-t0 # return factor of evaluations, and time
+
+
+
+def testimate(h,estimate_rho=True,**kwargs):
     """Estimate the total time of a 1D QTCI"""
-    if norb !=1: raise
-    if dim !=1: raise
-    fac,dt = testimate1d_qtci(h) # get factor of evaluated and time
+    fac,dt = testimate_qtci_general(h,**kwargs) # get factor of evaluated and time
     from .hubbard import get_density_i
     if estimate_rho:
         t0 = time.time() # initial time
