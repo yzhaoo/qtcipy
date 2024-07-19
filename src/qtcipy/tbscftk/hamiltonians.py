@@ -217,7 +217,7 @@ def position_honeycomb(N):
           r[4*count+2] = dr + a2/2. + np.array([1.5,.0]) # shift
           r[4*count+3] = dr + np.array([2.,.0]) # shift
           for io in range(4):
-              AB[4*count+io] =  (-1)**i1*(-1)**j1*(-1)**io # sublattice
+              AB[4*count+io] = (-1)**io # sublattice
           count += 1 # increase counter
     return r,AB
 
