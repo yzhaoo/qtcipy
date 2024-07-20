@@ -4,12 +4,16 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 16 # exponential length
+L = 22 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 import time
 
 # run on the CPU, with single precission
+
+print("System size,",H.H.shape[0])
+print("Timings for single evaluation of KPM")
+
 
 H.get_dos_i(kpm_prec="single") # run once to precompile
 t0 = time.time() # do the timing
@@ -36,21 +40,27 @@ H.get_dos_i(kpm_cpugpu="GPU") # run once to precompile
 t0 = time.time() # do the timing
 eg,dg = H.get_dos_i(kpm_cpugpu="GPU")
 t1 = time.time() # do the timing
-td = t1-t0
+tg = t1-t0
 print("GPU time = ",np.round(t1-t0,4))
+
 
 
 
 
 import matplotlib.pyplot as plt
 
-plt.plot(es,ds,label="single prec, CPU, time="+str(np.round(ts,3)))
-plt.plot(ed,dd,label="double prec, CPU, time="+str(np.round(td,3)))
-plt.plot(eg,dg,label="GPU, time="+str(np.round(td,3)))
-plt.tight_layout()
+plt.plot(es,ds,label="single prec. CPU, time="+str(np.round(ts,3)),
+        markersize=12,marker="o")
+plt.plot(ed,dd,label="double prec. CPU, time="+str(np.round(td,3)),
+        markersize=8,marker="o")
+plt.plot(eg,dg,label="GPU, time="+str(np.round(tg,3)),
+        markersize=4,marker="o")
+plt.ylabel("DOS")
+plt.xlabel("Energy")
 plt.legend()
-
-
+plt.tight_layout()
+plt.savefig("comparison.png")
+exit()
 
 plt.show()
 
