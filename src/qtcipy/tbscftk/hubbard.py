@@ -94,7 +94,7 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         if info: print("Error",error)
         if error<maxerror: break # stop loop
         if maxite is not None:
-            if ite>maxite: break
+            if ite>=maxite: break
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
     if log is not None: # up down resumation of the logs
