@@ -33,34 +33,39 @@ def get_den_kpm_qtci(h,**kwargs):
 #        return get_den_kpm_qtci_2d(h,**kwargs)
 
 
+#
+#def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
+#    """Return the electronic density of the system uisng KPM and QTCI"""
+#    @memoize
+#    def f(i): # function to interpolate
+#        return get_density_i(h,i=int(i),**kwargs)
+#    xlim = [0,h.shape[0]] # limits of the interpolation
+#    nb = np.log(h.shape[0])/np.log(2) # number of pseudospin sites
+#    nat = h.shape[0] # number of atoms
+#    if np.abs(int(nb)-nb)>1e-5:
+#        print("Number of points must be a power of 2")
+#        raise
+#    nb = int(nb) # number of points
+#    from .. import interpolate
+#    IP = interpolate.Interpolator(f,tol=1e-3,nb=nb,xlim=xlim,dim=1)
+#    if log is not None: # make a log
+#        rse,zse = IP.get_evaluated()
+#        log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
+#    if info_qtci:
+#         print(len(rse)/h.shape[0],"ratio of evaluations")
+#    out = np.zeros(nat,dtype=np.float_) # initialize
+#    for i in range(nat): out[i] = IP(float(i)) # store result
+#    return out # return the output
+#
+#
 
-def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
-    """Return the electronic density of the system uisng KPM and QTCI"""
-    @memoize
-    def f(i): # function to interpolate
-        return get_density_i(h,i=int(i),**kwargs)
-    xlim = [0,h.shape[0]] # limits of the interpolation
-    nb = np.log(h.shape[0])/np.log(2) # number of pseudospin sites
-    nat = h.shape[0] # number of atoms
-    if np.abs(int(nb)-nb)>1e-5:
-        print("Number of points must be a power of 2")
-        raise
-    nb = int(nb) # number of points
-    from .. import interpolate
-    IP = interpolate.Interpolator(f,tol=1e-3,nb=nb,xlim=xlim,dim=1)
-    if log is not None: # make a log
-        rse,zse = IP.get_evaluated()
-        log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
-    if info_qtci:
-         print(len(rse)/h.shape[0],"ratio of evaluations")
-    out = np.zeros(nat,dtype=np.float_) # initialize
-    for i in range(nat): out[i] = IP(float(i)) # store result
-    return out # return the output
+from ..recover import retry
 
+# decorator to recover the Julia session
 
+from ..juliasession import restart as restart_julia
 
-
-
+@retry(initialize=restart_julia)
 def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
     f = get_function(h,**kwargs) # get the function to interpolate

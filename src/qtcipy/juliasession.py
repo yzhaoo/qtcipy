@@ -24,3 +24,12 @@ path = os.path.dirname(os.path.realpath(__file__))
 # now execute the Julia code
 Main.eval(open(path+"/interpolate.jl").read())
 
+
+def restart():
+    global Main
+    del Main # remove this
+    from julia import Main
+    print("Julia session will be restarted")
+    Main.eval(open(path+"/interpolate.jl").read())
+
+restart()
