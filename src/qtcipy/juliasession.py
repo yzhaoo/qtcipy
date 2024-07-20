@@ -32,4 +32,3 @@ def restart():
     print("Julia session will be restarted")
     Main.eval(open(path+"/interpolate.jl").read())
 
-restart()
