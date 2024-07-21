@@ -1,8 +1,25 @@
+
+## use the local Julia if needed
+
+import os
+try: # try using global Julia
+    import julia as jl
+except:
+    path = os.path.dirname(os.path.realpath(__file__))
+    import sys
+    sys.path.append(path+"/pylib") # add the local julia
+    print("Using the local Julia")
+    import julia as jl
+
+
+
+
+
+
 from julia import Julia
 Julia(compiled_modules=False)  # Initialize Julia
 
 from julia import Main
-import os
 
 import subprocess
 
