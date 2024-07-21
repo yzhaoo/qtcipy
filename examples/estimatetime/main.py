@@ -6,7 +6,7 @@ import numpy as np
 
 L = 18 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
-H.add_onsite(lambda r: np.cos(2*np.pi*r[0]*np.sqrt(2)))
+#H.add_onsite(lambda r: np.cos(2*np.pi*r[0]*np.sqrt(2)))
 
 # get the SCF object
 SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object

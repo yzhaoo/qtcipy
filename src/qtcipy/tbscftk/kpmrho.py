@@ -59,13 +59,8 @@ def get_den_kpm_qtci(h,**kwargs):
 #
 #
 
-from ..recover import retry
 
-# decorator to recover the Julia session
 
-from ..juliasession import restart as restart_julia
-
-@retry(initialize=restart_julia)
 def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
     f = get_function(h,**kwargs) # get the function to interpolate
@@ -79,6 +74,9 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
          print(len(rse)/h.shape[0],"ratio of evaluations")
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
     return out # return the output
+
+
+
 
 
 def evaluate_interpolator(h,IP,dim=1,**kwargs):
@@ -100,6 +98,11 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 
 
 
+# decorator to recover the Julia session
+from ..recover import retry
+from ..juliasession import restart as restart_julia
+
+@retry(initialize=restart_julia)
 def get_interpolator(h,f,nb,lim,dim=1,qtci_tol=1e-3,**kwargs):
     """Return the interpolator"""
     from .. import interpolate
