@@ -7,29 +7,27 @@ import numpy as np
 from .hubbard import get_density_i
 
 #
-#def memoize(func):
-#    """Decorator to use a cache"""
-#    cache = {}
-#
-#    def memoized_func(*args):
-#        if args in cache:
-#            return cache[args]
-#        result = func(*args)
-#        cache[args] = result
-#        return result
-#
-#    return memoized_func
+def memoize(func):
+    """Decorator to use a cache"""
+    cache = {}
+    def memoized_func(*args):
+        if args in cache:
+            return cache[args]
+        result = func(*args)
+        cache[args] = result
+        return result
+    return memoized_func
 #
 #
 
 from functools import lru_cache
-
-def memoize(func):
-    """Decorator to use a cache with LRU eviction policy"""
-    # Wrap the function with lru_cache
-    cached_func = lru_cache(maxsize=1000)(func)
-    return cached_func
-
+#
+#def memoize(func):
+#    """Decorator to use a cache with LRU eviction policy"""
+#    # Wrap the function with lru_cache
+#    cached_func = lru_cache(maxsize=1000)(func)
+#    return cached_func
+#
 
 #from functools import cache as memoize
 
@@ -111,15 +109,16 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 
 
 # decorator to recover the Julia session
-from ..recover import retry
-from ..juliasession import restart as restart_julia
+#from ..recover import retry
+#from ..juliasession import restart as restart_julia
 
-@retry(initialize=restart_julia)
+#@retry(initialize=restart_julia)
 def get_interpolator(h,f,nb,lim,dim=1,qtci_tol=1e-3,**kwargs):
     """Return the interpolator"""
     from .. import interpolate
     if dim==1: # one dimensional
-        IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],dim=1)
+        IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
+                dim=1,backend="C++")
     elif dim==2: # two dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
                 ylim=lim[1],dim=2)
