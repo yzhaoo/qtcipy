@@ -18,6 +18,7 @@ def install():
 
 import subprocess
 import sys
+import os
 
 def install_package(package, target_path=None):
     """
