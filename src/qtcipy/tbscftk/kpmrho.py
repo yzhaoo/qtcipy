@@ -151,7 +151,9 @@ def get_function(h,dim=1,**kwargs):
     """Return the function to interpolate"""
     @memoize
     def f1d(i): # function to interpolate
-        return get_density_i(h,i=int(i),**kwargs)
+        ii = int(np.round(i)) # round the value
+        if not 0<=ii<h.shape[0]: raise # throw an error
+        return get_density_i(h,i=ii,**kwargs)
     @memoize
     def f2d(i,j): # function to interpolate
         n = h.shape[0] # number of sites
