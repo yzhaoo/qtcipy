@@ -23,15 +23,15 @@ from .hubbard import get_density_i
 #
 
 from functools import lru_cache
-#
-#def memoize(func):
-#    """Decorator to use a cache with LRU eviction policy"""
-#    # Wrap the function with lru_cache
-#    cached_func = lru_cache(maxsize=128)(func)
-#    return cached_func
-#
 
-from functools import cache as memoize
+def memoize(func):
+    """Decorator to use a cache with LRU eviction policy"""
+    # Wrap the function with lru_cache
+    cached_func = lru_cache(maxsize=1000)(func)
+    return cached_func
+
+
+#from functools import cache as memoize
 
 
 
