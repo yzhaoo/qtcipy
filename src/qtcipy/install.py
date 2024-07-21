@@ -14,3 +14,34 @@ def install():
 
 
 
+# install required python libraries
+
+import subprocess
+import sys
+
+def install_package(package, target_path=None):
+    """
+    Install a Python package using pip, with an optional target path.
+    """
+    command = [sys.executable, "-m", "pip", "install", package]
+    if target_path:
+        command.extend(["--target", target_path])
+    try:
+        subprocess.check_call(command)
+        print(package," installed successfully")
+        if target_path:
+            print("Installed to target path: {target_path}")
+    except subprocess.CalledProcessError as e:
+        print("Failed to install",package)
+
+
+
+def install_pylibs():
+    """Install Python libraries"""
+    path = os.path.dirname(os.path.realpath(__file__)) # this location
+    pylibpath = path + "/pylib"
+    install_package("julia",target_path=pylibpath)
+
+
+
+
