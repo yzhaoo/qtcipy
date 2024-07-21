@@ -4,7 +4,7 @@ import sys
 path = os.path.dirname(os.path.realpath(__file__))
 
 # add xfacpy library
-sys.path.append(path+"/xfac/build/python")
+sys.path.append(path+"/pylib/xfac/build/python")
 
 import xfacpy
 
