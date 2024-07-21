@@ -56,8 +56,9 @@ def testimate_qtci_general(h,dim=1,**kwargs):
 
 def testimate(h,estimate_rho=True,**kwargs):
     """Estimate the total time of a 1D QTCI"""
-    fac,dt = testimate_qtci_general(h,**kwargs) # get factor of evaluated and time
     from .hubbard import get_density_i
+    get_density_i(h,**kwargs)
+    fac,dt = testimate_qtci_general(h,**kwargs) # get factor of evaluated and time
     if estimate_rho:
         t0 = time.time() # initial time
         get_density_i(h,**kwargs)
