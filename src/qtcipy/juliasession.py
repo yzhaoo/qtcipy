@@ -49,3 +49,11 @@ def restart():
     print("Julia session will be restarted")
     Main.eval(open(path+"/interpolate.jl").read())
 
+
+
+
+# this may make the code stable
+os.environ["PYTHONFAULTHANDLER"] = 0 
+
+
+

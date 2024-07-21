@@ -6,7 +6,7 @@ class Hamiltonian():
         """Class for a Hamiltonian"""
         self.dim = 1 # dimensionality
         self.H = H # matrix
-        self.R = R # locations
+        self.R = R - np.mean(R,axis=0) # center in 0
         self.AB = AB # sublattice
     def get_SCF_Hubbard(self,**kwargs):
         """Return the SCF object"""
@@ -30,6 +30,9 @@ class Hamiltonian():
         """Return the LDOS at a certain energy"""
         from .ldos import get_ldos
         return get_ldos(self.H,**kwargs)
+    def index_around_r(self,**kwargs):
+        return index_around_r(self.R,**kwargs)
+
 
 
 
@@ -225,11 +228,13 @@ def position_honeycomb(N):
           count += 1 # increase counter
     return r,AB
 
-
-
-
-
-
+def index_around_r(R0,r=[0.,0.],dr=1.0):
+    R = R0.copy() # make a copy
+    R[:,0] -= r[0] # center
+    R[:,1] -= r[1] # center
+    R2 = np.sum(R*R,axis=1) # square distance
+    inds = np.where(R2 < dr*dr)[0]
+    return inds # return indexes
 
 
 
