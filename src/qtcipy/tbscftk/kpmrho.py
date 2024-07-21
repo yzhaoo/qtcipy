@@ -6,20 +6,32 @@
 import numpy as np
 from .hubbard import get_density_i
 
+#
+#def memoize(func):
+#    """Decorator to use a cache"""
+#    cache = {}
+#
+#    def memoized_func(*args):
+#        if args in cache:
+#            return cache[args]
+#        result = func(*args)
+#        cache[args] = result
+#        return result
+#
+#    return memoized_func
+#
+#
 
-def memoize(func):
-    """Decorator to use a cache"""
-    cache = {}
+from functools import lru_cache
+#
+#def memoize(func):
+#    """Decorator to use a cache with LRU eviction policy"""
+#    # Wrap the function with lru_cache
+#    cached_func = lru_cache(maxsize=128)(func)
+#    return cached_func
+#
 
-    def memoized_func(*args):
-        if args in cache:
-            return cache[args]
-        result = func(*args)
-        cache[args] = result
-        return result
-
-    return memoized_func
-
+from functools import cache as memoize
 
 
 
@@ -149,7 +161,7 @@ def get_nbits(h,dim=1,**kwargs):
 
 def get_function(h,dim=1,**kwargs):
     """Return the function to interpolate"""
-#    @memoize
+    @memoize
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
         if not 0<=ii<h.shape[0]: # fix and say
@@ -157,7 +169,7 @@ def get_function(h,dim=1,**kwargs):
             if ii<0: ii = 0 # fix
             else: ii = h.shape[0]-1 # last one
         return get_density_i(h,i=ii,**kwargs)
-#    @memoize
+    @memoize
     def f2d(i,j): # function to interpolate
         n = h.shape[0] # number of sites
         n = int(np.sqrt(n)) # lateral size of the system

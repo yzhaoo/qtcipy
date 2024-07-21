@@ -1,7 +1,7 @@
 import os ; import sys
 sys.path.append(os.getcwd()+"/../../src")
 
-from qtcipy import interpolatecpp
+from qtcipy import interpolate
 
 # Define a Python function to be passed to Julia
 import numpy as np
@@ -16,7 +16,7 @@ xlim = [-4,4]
 #print("Integral with quad, as a reference",out[0])
 
 # create the interpolator
-IP = interpolatecpp.Interpolator(f,tol=1e-3,nb=10,xlim=xlim)
+IP = interpolate.Interpolator(f,tol=1e-3,nb=10,xlim=xlim)
 
 # evaluate the function and the interpolation
 xs = np.linspace(-3,3,400)
