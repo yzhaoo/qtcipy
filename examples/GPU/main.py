@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 12 # exponential length
+L = 22 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 import time
