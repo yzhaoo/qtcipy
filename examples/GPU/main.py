@@ -4,10 +4,12 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 22 # exponential length
+L = 12 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 import time
+
+H.get_dos_i(kpm_cpugpu="GPU") # run once to precompile
 
 # run on the CPU, with single precission
 
