@@ -42,7 +42,7 @@ def get_den_ed(h,fermi=0.,**kwargs):
 
 def get_den_kpm(h,use_qtci=True,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
-    @memoize
+#    @memoize
     def f(i): # function to interpolate
         return get_density_i(h,i=int(i),**kwargs)
     if use_qtci: # use quantics tensor cross interpolation

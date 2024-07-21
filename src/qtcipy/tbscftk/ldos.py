@@ -22,7 +22,7 @@ def get_ldos(m,info_qtci=True,i=None,**kwargs):
             rse,zse = IP.get_evaluated()
             fac = len(rse)/m.shape[0] # ratio of evaluations
             print("Ratio of evaluations in LDOS",fac)
-        return out # return the output
+        return np.array(out) # return the output
     else:
         return get_ldos_sparse(m,i=i,**kwargs) # return a single one
 

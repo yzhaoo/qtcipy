@@ -47,6 +47,16 @@ class SCF_Hubbard():
         (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
         (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
         return es,dup+ddn # return energy and DOS
+    def get_ldos(self,**kwargs):
+        from .ldos import get_ldos
+        oup = get_ldos(self.H[0],**kwargs)
+        odn = get_ldos(self.H[1],**kwargs)
+        return (oup+odn)/2. # up plus down
+    def get_spin_ldos(self,**kwargs):
+        from .ldos import get_ldos
+        oup = get_ldos(self.H[0],**kwargs)
+        odn = get_ldos(self.H[1],**kwargs)
+        return (oup-odn)/2. # up minus down
     def get_spin_dos_i(self,w=None,**kwargs):
         """Compute the DOS in site i"""
         from .kpmrho import get_dos_i
