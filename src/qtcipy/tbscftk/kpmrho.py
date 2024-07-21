@@ -152,7 +152,10 @@ def get_function(h,dim=1,**kwargs):
     @memoize
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
-        if not 0<=ii<h.shape[0]: raise # throw an error
+        if not 0<=ii<h.shape[0]: # fix and say
+            print("WARNING, you are out of bounds!!!!")
+            if ii<0: ii = 0 # fix
+            else: ii = h.shape[0]-1 # last one
         return get_density_i(h,i=ii,**kwargs)
     @memoize
     def f2d(i,j): # function to interpolate
