@@ -161,7 +161,7 @@ def get_nbits(h,dim=1,**kwargs):
 
 def get_function(h,dim=1,**kwargs):
     """Return the function to interpolate"""
-    @memoize
+#    @memoize
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
         if not 0<=ii<h.shape[0]: # fix and say
@@ -169,7 +169,7 @@ def get_function(h,dim=1,**kwargs):
             if ii<0: ii = 0 # fix
             else: ii = h.shape[0]-1 # last one
         return get_density_i(h,i=ii,**kwargs)
-    @memoize
+#    @memoize
     def f2d(i,j): # function to interpolate
         n = h.shape[0] # number of sites
         n = int(np.sqrt(n)) # lateral size of the system
