@@ -53,7 +53,7 @@ def restart():
 
 
 # this may make the code stable
-os.environ["PYTHONFAULTHANDLER"] = 0 
+os.environ["PYTHONFAULTHANDLER"] = "0"
 
 
 
