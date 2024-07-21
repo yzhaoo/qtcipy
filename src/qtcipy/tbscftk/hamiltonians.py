@@ -26,7 +26,11 @@ class Hamiltonian():
     def copy(self):
         from copy import deepcopy
         return deepcopy(self)
-#        return get_density_i(self.H,**kwargs)
+    def get_ldos(self,**kwargs):
+        """Return the LDOS at a certain energy"""
+        from .ldos import get_ldos
+        return get_ldos(self.H,**kwargs)
+
 
 
 def chain(L):
