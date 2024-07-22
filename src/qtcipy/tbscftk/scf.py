@@ -25,7 +25,7 @@ class SCF_Hubbard():
     def solve(self,qtci_maxm=None,**kwargs):
         """Perform the SCF loop"""
         if qtci_maxm is not None: # overwrite maxm if needed (old used otherwise)
-            log["opt_qtci_maxm"] = qtci_maxm
+            self.log["opt_qtci_maxm"] = qtci_maxm
         from .hubbard import SCF_Hubbard
         h0 = self.H0.H
         U = self.U # Hubbard
