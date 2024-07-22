@@ -46,7 +46,7 @@ def get_ci(f, qgrid=None,
     ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
     while not ci.isDone(): # iterate until convergence
         ci.iterate()
-#    return ci,args,qtci_maxm # return the optimal bond dimension
+    return ci,args,qtci_maxm # return the optimal bond dimension
     if tol is not None: # if tolerance is enforced, do it iteratively
         errs = ci.pivotError
         if errs[len(errs)-1]>tol: # do it again
