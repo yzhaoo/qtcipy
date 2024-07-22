@@ -85,6 +85,7 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
         log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
+    print(len(rse)/h.shape[0],"ratio of evaluations")
     if info_qtci:
          print(len(rse)/h.shape[0],"ratio of evaluations")
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator

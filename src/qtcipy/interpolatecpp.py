@@ -14,7 +14,7 @@ class Interpolator():
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
         self.f = memoize(f)
-        ci,args,opt_qtci_maxm = get_ci(f,qgrid=qgrid, **kwargs)
+        ci,args,opt_qtci_maxm = get_ci(self.f,qgrid=qgrid, **kwargs)
         self.ci = ci
         self.xlim = xlim
         self.qgrid = qgrid
@@ -46,12 +46,13 @@ def get_ci(f, qgrid=None,
     ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
     while not ci.isDone(): # iterate until convergence
         ci.iterate()
+#    return ci,args,qtci_maxm # return the optimal bond dimension
     if tol is not None: # if tolerance is enforced, do it iteratively
         errs = ci.pivotError
         if errs[len(errs)-1]>tol: # do it again
 #            args.bondDim = int(int(args.bondDim)*1.5) # increase bond dimension
             m0 = qtci_maxm
-            qtci_maxm = int(qtci_maxm*1.3) + 1 # redefine
+            qtci_maxm = int(qtci_maxm) + 1 # redefine
             print("New quantics bond dimension",qtci_maxm)
             print("Original quantics bond dimension",m0)
             return get_ci(f, qgrid=qgrid, 
