@@ -1,6 +1,6 @@
 #  qtcipy
 Python library to perform quantics tensor cross interpolation. The library
-is built on top of [QuanticsTCI.jl](https://github.com/tensor4all/QuanticsTCI.jl?tab=readme-ov-file)
+is built on top of [QuanticsTCI.jl](https://github.com/tensor4all/QuanticsTCI.jl?tab=readme-ov-file) and [xfacpy](https://github.com/tensor4all/xfac)
 
 # Examples
 

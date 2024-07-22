@@ -13,7 +13,7 @@ class Interpolator():
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
         args = xfacpy.TensorCI2Param()                      # fix the max bond dimension
-        args.bondDim = 15
+        args.bondDim = 30
         self.f = memoize(f)
         ci = xfacpy.QTensorCI(f1d=self.f, qgrid=qgrid, args=args)  # construct a tci
         while not ci.isDone():
