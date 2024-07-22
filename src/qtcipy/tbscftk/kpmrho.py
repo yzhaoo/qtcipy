@@ -76,10 +76,15 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     f = get_function(h,**kwargs) # get the function to interpolate
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
-    IP = get_interpolator(h,f,nb,lim,**kwargs) # keyword arguments
+    if log is not None: qtci_maxm = log["opt_qtci_maxm"] # get the maxm
+    else: qtci_maxm = 20 # reasonable guess
+    IP = get_interpolator(h,f,nb,lim,
+            qtci_maxm=qtci_maxm,
+            **kwargs) # keyword arguments
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
+        log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
     if info_qtci:
          print(len(rse)/h.shape[0],"ratio of evaluations")
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
@@ -118,7 +123,7 @@ def get_interpolator(h,f,nb,lim,dim=1,qtci_tol=1e-3,**kwargs):
     from .. import interpolate
     if dim==1: # one dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
-                dim=1,backend="C++")
+                dim=1,backend="C++",**kwargs)
     elif dim==2: # two dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
                 ylim=lim[1],dim=2)

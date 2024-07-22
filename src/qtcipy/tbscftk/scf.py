@@ -20,9 +20,12 @@ class SCF_Hubbard():
         log["SCF_error"] = [] # initialize
         log["QTCI_eval"] = [] # initialize
         log["SCF_time"] = [] # initialize
+        log["opt_qtci_maxm"] = 20 # reasonable initial guess
         self.log = log # store the log
-    def solve(self,**kwargs):
+    def solve(self,qtci_maxm=None,**kwargs):
         """Perform the SCF loop"""
+        if qtci_maxm is not None: # overwrite maxm if needed (old used otherwise)
+            log["opt_qtci_maxm"] = qtci_maxm
         from .hubbard import SCF_Hubbard
         h0 = self.H0.H
         U = self.U # Hubbard

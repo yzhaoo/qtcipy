@@ -9,22 +9,18 @@ sys.path.append(path+"/pylib/xfac/build/python")
 import xfacpy
 
 class Interpolator():
-    def __init__(self,f,xlim=[0.,1.],nb=20,tol=1e-2,**kwargs):
+    def __init__(self,f,xlim=[0.,1.],nb=20,
+            **kwargs):
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
-        args = xfacpy.TensorCI2Param()                      # fix the max bond dimension
-        args.bondDim = 30
         self.f = memoize(f)
-        ci = xfacpy.QTensorCI(f1d=self.f, qgrid=qgrid, args=args)  # construct a tci
-        while not ci.isDone():
-            ci.iterate()
+        ci,args,opt_qtci_maxm = get_ci(f,qgrid=qgrid, **kwargs)
         self.ci = ci
         self.xlim = xlim
         self.qgrid = qgrid
-#        self.ranks = ranks
-#        self.dim = dim
-#        self.tol = tol
+        self.qtci_maxm = args.bondDim # store the bond dimension
         self.errors = ci.pivotError
+        self.opt_qtci_maxm = opt_qtci_maxm
         self.R = nb
         self.qtt = ci.get_qtt()  # the actual function approximating f
     def __call__(self,xs):
@@ -37,6 +33,38 @@ class Interpolator():
         raise
     def get_evaluated(self):
         return get_cache_info(self.f)
+
+
+
+
+def get_ci(f, qgrid=None, 
+        qtci_maxm=1, # initial bond dimension
+        tol=None,**kwargs):
+    """Compute the CI, using an iterative procedure if needed"""
+    args = xfacpy.TensorCI2Param()                      # fix the max bond dimension
+    args.bondDim = qtci_maxm
+    ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
+    while not ci.isDone(): # iterate until convergence
+        ci.iterate()
+    if tol is not None: # if tolerance is enforced, do it iteratively
+        errs = ci.pivotError
+        if errs[len(errs)-1]>tol: # do it again
+#            args.bondDim = int(int(args.bondDim)*1.5) # increase bond dimension
+            m0 = qtci_maxm
+            qtci_maxm = int(qtci_maxm*1.3) + 1 # redefine
+            print("New quantics bond dimension",qtci_maxm)
+            print("Original quantics bond dimension",m0)
+            return get_ci(f, qgrid=qgrid, 
+                    qtci_maxm=qtci_maxm,tol=tol,**kwargs) # do it again
+    return ci,args,qtci_maxm # return the optimal bond dimension
+
+
+
+
+
+
+
+
 
 
 
