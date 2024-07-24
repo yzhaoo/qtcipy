@@ -52,7 +52,7 @@ def get_ci(f, qgrid=None,
         if err>tol/10: # do it again
             m0 = qtci_maxm # store original one
             print("Error",err,qtci_maxm,"target",tol)
-            qtci_maxm = int(qtci_maxm) + 1 # redefine
+            qtci_maxm = int(qtci_maxm) + 5 # redefine
             print("New quantics bond dimension",qtci_maxm)
 #            print("Original quantics bond dimension",m0)
             maxm = m0

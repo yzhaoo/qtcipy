@@ -77,7 +77,7 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
     if log is not None: qtci_maxm = log["opt_qtci_maxm"] # get the maxm
-    else: qtci_maxm = 4 # reasonable guess
+    else: qtci_maxm = 5 # reasonable guess
     IP = get_interpolator(h,f,nb,lim,
             qtci_maxm=qtci_maxm,
             **kwargs) # keyword arguments
