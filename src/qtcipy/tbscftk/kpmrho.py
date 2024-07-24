@@ -119,12 +119,13 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 #from ..juliasession import restart as restart_julia
 
 #@retry(initialize=restart_julia)
-def get_interpolator(h,f,nb,lim,dim=1,qtci_tol=1e-3,**kwargs):
+def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
+        qtci_tol=None,**kwargs):
     """Return the interpolator"""
     from .. import interpolate
     if dim==1: # one dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
-                dim=1,backend="C++",**kwargs)
+                dim=1,backend=backend,**kwargs)
     elif dim==2: # two dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
                 ylim=lim[1],dim=2)

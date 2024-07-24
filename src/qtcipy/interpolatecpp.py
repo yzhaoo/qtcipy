@@ -56,6 +56,7 @@ def get_ci(f, qgrid=None, nb=1,
         evf = len(get_cache_info(f)[0])/(2**nb)
         err = ci.pivotError[len(ci.pivotError)-1]
         print("Eval frac = ",evf,"maxm = ",qtci_maxm,"error = ",err,"target = ",tol)
+        if tol is None: break # stop if no tolerance given
         if err>tol: # do it again
             m0 = qtci_maxm # store original one
 #            print("Quantics error",err,qtci_maxm,"target",tol)

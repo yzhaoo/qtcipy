@@ -20,7 +20,7 @@ class SCF_Hubbard():
         log["SCF_error"] = [] # initialize
         log["QTCI_eval"] = [] # initialize
         log["SCF_time"] = [] # initialize
-        log["opt_qtci_maxm"] = 5 # reasonable initial guess
+        log["opt_qtci_maxm"] = 15 # reasonable initial guess
         self.log = log # store the log
     def solve(self,qtci_maxm=None,**kwargs):
         """Perform the SCF loop"""
