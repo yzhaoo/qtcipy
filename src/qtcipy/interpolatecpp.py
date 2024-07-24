@@ -33,7 +33,7 @@ class Interpolator():
     def integrate(self,axis=None,**kwargs):
         raise
     def get_evaluated(self):
-        return get_cache(self.f)
+        return get_cache_info(self.f)
     def get_eval_frac(self):
         return (len(self.get_evaluated()[0]))/(2**self.nb)
 
@@ -41,41 +41,30 @@ class Interpolator():
 
 import numpy as np
 
-def get_ci(f, qgrid=None, nb=1,dmaxm = 1,
+
+def get_ci(f, qgrid=None, nb=1,
         qtci_maxm=3, # initial bond dimension
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
     maxm = qtci_maxm # initialize
     while True: # infinite loop until convergence is reached
         args = xfacpy.TensorCI2Param()  # fix the max bond dimension
-        args.pivot1=qgrid.coord_to_id(np.array([0.])) # start at the edge
-        args.bondDim = qtci_maxm # set the bond dimension
+        args.bondDim = qtci_maxm
         ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
-        ### reuse the evaluated points in the previous iteration ###
-        pv = get_cache(f) # get the evalauted points
-        points = [p for p in pv[0]]
-        vals = [v for v in pv[1]]
-        print(points,vals)
-        exit()
-#        if len(points)>0:
-#            print(points) ; exit()
-            #ci.addPivotPoints([qgrid.coord_to_id(np.array([p])) for p in points])
-#            ci.addPivotPoints([np.array([p]) for p in points])
         while not ci.isDone(): # iterate until convergence
             ci.iterate()
-        evf = len(get_cache(f)[0])/(2**nb)
+        evf = len(get_cache_info(f)[0])/(2**nb)
         err = ci.pivotError[len(ci.pivotError)-1]
         print("Eval frac = ",evf,"maxm = ",qtci_maxm,"error = ",err,"target = ",tol)
         if err>tol: # do it again
             m0 = qtci_maxm # store original one
 #            print("Quantics error",err,qtci_maxm,"target",tol)
-            qtci_maxm = int(qtci_maxm) + dmaxm # redefine
+            qtci_maxm = int(qtci_maxm) + 5 # redefine
 #            print("New quantics bond dimension",qtci_maxm)
 #            print("Original quantics bond dimension",m0)
             maxm = m0
         else: break
     return ci,args,qtci_maxm # return the optimal bond dimension
-
 
 
 
@@ -94,36 +83,27 @@ def is_iterable(e): return isinstance(e,Iterable)
 import pickle
 from functools import lru_cache, wraps
 
-def memoize(f): # this is just to plot later the sampled points
-    def fcache(x): 
-        y = f(x)
-        fcache.sampled[x] = y
-        return y
-    fcache.sampled = {} # initialize
-    return fcache
+def memoize(f):
+    @lru_cache(maxsize=None)
+    @wraps(f)
+    def memoized_func(*args, **kwargs):
+        return f(*args, **kwargs)
 
-#
-#def memoize(f):
-#    @lru_cache(maxsize=None)
-#    @wraps(f)
-#    def memoized_func(*args, **kwargs):
-#        return f(*args, **kwargs)
-#    
-#    memoized_func._cache = {}
-#
-#    original_func = memoized_func.__wrapped__
-#
-#    @wraps(memoized_func)
-#    def wrapper(*args, **kwargs):
-#        result = memoized_func(*args, **kwargs)
-#        key = pickle.dumps((args, frozenset(kwargs.items())))
-#        memoized_func._cache[key] = result
-#        return result
-#    
-#    wrapper.cache_info = memoized_func.cache_info
-#    wrapper._cache = memoized_func._cache
-#
-#    return wrapper
+    memoized_func._cache = {}
+
+    original_func = memoized_func.__wrapped__
+
+    @wraps(memoized_func)
+    def wrapper(*args, **kwargs):
+        result = memoized_func(*args, **kwargs)
+        key = pickle.dumps((args, frozenset(kwargs.items())))
+        memoized_func._cache[key] = result
+        return result
+
+    wrapper.cache_info = memoized_func.cache_info
+    wrapper._cache = memoized_func._cache
+
+    return wrapper
 
 # Define the function to be memoized
 def f(x):
@@ -133,15 +113,13 @@ def f(x):
 #fo = memoize(f)
 
 # Recover the list of evaluated points
-def get_cache(func):
-    xs = [key for key in func.sampled]
-    ys = [func.sampled(key) for key in func.sampled]
+def get_cache_info(func):
+    cache_info = func.cache_info()
+    cache_keys = list(func._cache.keys())
+    xs = [pickle.loads(key) for key in cache_keys]
+    xs = [x[0][0] for x in xs]
+    ys = [func(x) for x in xs]
     return xs,ys
-
-
-
-
-
 
 
 
