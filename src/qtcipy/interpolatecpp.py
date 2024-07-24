@@ -35,28 +35,28 @@ class Interpolator():
         return get_cache_info(self.f)
 
 
-
+import numpy as np
 
 def get_ci(f, qgrid=None, 
-        qtci_maxm=1, # initial bond dimension
+        qtci_maxm=3, # initial bond dimension
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
-    args = xfacpy.TensorCI2Param()                      # fix the max bond dimension
-    args.bondDim = qtci_maxm
-    ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
-    while not ci.isDone(): # iterate until convergence
-        ci.iterate()
-    return ci,args,qtci_maxm # return the optimal bond dimension
-    if tol is not None: # if tolerance is enforced, do it iteratively
-        errs = ci.pivotError
-        if errs[len(errs)-1]>tol: # do it again
-#            args.bondDim = int(int(args.bondDim)*1.5) # increase bond dimension
-            m0 = qtci_maxm
+    maxm = qtci_maxm # initialize
+    while True: # infinite loop until convergence is reached
+        args = xfacpy.TensorCI2Param()  # fix the max bond dimension
+        args.bondDim = qtci_maxm
+        ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
+        while not ci.isDone(): # iterate until convergence
+            ci.iterate()
+        err = ci.pivotError[len(ci.pivotError)-1]
+        if err>tol/10: # do it again
+            m0 = qtci_maxm # store original one
+            print("Error",err,qtci_maxm,"target",tol)
             qtci_maxm = int(qtci_maxm) + 1 # redefine
             print("New quantics bond dimension",qtci_maxm)
-            print("Original quantics bond dimension",m0)
-            return get_ci(f, qgrid=qgrid, 
-                    qtci_maxm=qtci_maxm,tol=tol,**kwargs) # do it again
+#            print("Original quantics bond dimension",m0)
+            maxm = m0
+        else: break
     return ci,args,qtci_maxm # return the optimal bond dimension
 
 
