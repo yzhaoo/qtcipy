@@ -218,8 +218,9 @@ def estimate_qtci_maxm(h,R,f,qtci_tol=1e-2,**kwargs):
     lim = get_lim(h,**kwargs) # get the limits
     fo = lambda i: f(R[int(i),:])
     IP = interpolate.Interpolator(fo,tol=qtci_tol,nb=nb,xlim=lim[0],
+                dmaxm=1,
                 dim=1,backend="C++")
-    return IP.pt_qtci_maxm 
+    return IP.opt_qtci_maxm 
 
 
 
