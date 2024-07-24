@@ -210,3 +210,18 @@ def get_dos_i(m,i=0,delta=1e-1,kpm_prec="single",
 
 
 
+
+def estimate_qtci_maxm(h,R,f,qtci_tol=1e-2,**kwargs):
+    """Estimate a good guess for the bond dimension"""
+    from .. import interpolate
+    nb = get_nbits(h,**kwargs) # return the number of bits
+    lim = get_lim(h,**kwargs) # get the limits
+    fo = lambda i: f(R[int(i),:])
+    IP = interpolate.Interpolator(fo,tol=qtci_tol,nb=nb,xlim=lim[0],
+                dim=1,backend="C++")
+    return IP.pt_qtci_maxm 
+
+
+
+
+

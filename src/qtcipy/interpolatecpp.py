@@ -14,8 +14,9 @@ class Interpolator():
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
         self.f = memoize(f)
-        ci,args,opt_qtci_maxm = get_ci(self.f,qgrid=qgrid, **kwargs)
+        ci,args,opt_qtci_maxm = get_ci(self.f,nb=nb,qgrid=qgrid, **kwargs)
         self.ci = ci
+        self.nb = nb
         self.xlim = xlim
         self.qgrid = qgrid
         self.qtci_maxm = args.bondDim # store the bond dimension
@@ -33,11 +34,14 @@ class Interpolator():
         raise
     def get_evaluated(self):
         return get_cache_info(self.f)
+    def get_eval_frac(self):
+        return (len(self.get_evaluated()[0]))/(2**self.nb)
+
 
 
 import numpy as np
 
-def get_ci(f, qgrid=None, 
+def get_ci(f, qgrid=None, nb=1,
         qtci_maxm=3, # initial bond dimension
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
@@ -48,12 +52,14 @@ def get_ci(f, qgrid=None,
         ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
         while not ci.isDone(): # iterate until convergence
             ci.iterate()
+        evf = len(get_cache_info(f)[0])/(2**nb)
         err = ci.pivotError[len(ci.pivotError)-1]
-        if err>tol/10: # do it again
+        print("Eval frac = ",evf,"maxm = ",qtci_maxm,"error = ",err,"target = ",tol)
+        if err>tol: # do it again
             m0 = qtci_maxm # store original one
-            print("Error",err,qtci_maxm,"target",tol)
+#            print("Quantics error",err,qtci_maxm,"target",tol)
             qtci_maxm = int(qtci_maxm) + 5 # redefine
-            print("New quantics bond dimension",qtci_maxm)
+#            print("New quantics bond dimension",qtci_maxm)
 #            print("Original quantics bond dimension",m0)
             maxm = m0
         else: break
