@@ -103,9 +103,10 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
             if ite>=maxite: break
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
-    if log is not None: # up down resumation of the logs
+    if log is not None: # up down logs
         ev = log0["QTCI_eval"] 
-        ev = [(ev[2*i] + ev[2*i+1])/2. for i in range(len(ev)//2)] # resum
+        if not chiral_AF: # resum if needed
+            ev = [(ev[2*i] + ev[2*i+1])/2. for i in range(len(ev)//2)] # resum
         log["QTCI_eval"] += ev # store
     # convert to single (real) precision
     hup = hup.astype(np.float32)
