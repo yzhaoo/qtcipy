@@ -23,7 +23,6 @@ SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 SCF.solve(info=True,use_qtci=True,
 #        qtci_maxm = m,
         chiral_AF = True,
-        kpm_cpugpu="GPU",
         use_kpm=True) # solve the SCF
 #SCF.save()
 #SCF = SCF.load()

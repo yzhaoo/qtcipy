@@ -98,10 +98,13 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
 def evaluate_interpolator(h,IP,dim=1,**kwargs):
     nat = h.shape[0]
     if dim==1: # 1D
-        out = np.zeros(nat,dtype=np.float_) # initialize
+        out = np.zeros(nat,dtype=np.float32) # initialize
         for i in range(nat): out[i] = IP(float(i)) # store result
+        out[out<0.] = 0. # bounds
+        out[out>1.] = 1. # bounds
         return out
     elif dim==2: # 2D
+        raise
         print("Using 2D")
         n = int(np.sqrt(nat)) # lateral size of the system
         out = np.zeros(nat,dtype=np.float_) # initialize
@@ -174,7 +177,11 @@ def get_function(h,dim=1,**kwargs):
             print("WARNING, you are out of bounds!!!!")
             if ii<0: ii = 0 # fix
             else: ii = h.shape[0]-1 # last one
-        return get_density_i(h,i=ii,**kwargs)
+        out = get_density_i(h,i=ii,**kwargs) # get the density
+        # rescale to interval 0,1
+        if out<0.: return 0.
+        if out>1.: return 1.0
+        else: return out
 #    @memoize
     def f2d(i,j): # function to interpolate
         n = h.shape[0] # number of sites

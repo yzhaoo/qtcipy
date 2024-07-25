@@ -1,5 +1,6 @@
 *.OUT
 *.swp
+*.swo
 *.pyc
 __pycache__
 src/qtcipy/pylib/*

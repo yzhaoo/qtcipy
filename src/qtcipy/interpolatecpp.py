@@ -27,6 +27,7 @@ class Interpolator():
     def __call__(self,xs):
         if is_iterable(xs):
             out = [self.qtt.eval([x]) for x in xs]
+            out = np.array(out)
         else:
             out = self.qtt.eval([xs])
         return out
