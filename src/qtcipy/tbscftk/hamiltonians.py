@@ -41,12 +41,12 @@ def chain(L):
     # define a first neighbor tight binding model
     n = 2**L # number of sites
     rows,cols = np.array(np.arange(0,n-1)),np.array(np.arange(1,n)) # indexes
-    data = np.zeros(n-1,dtype=np.complex_) # hopping 1 for all
+    data = np.zeros(n-1,dtype=np.float32) # hopping 1 for all
     data[:] = 1.0 # initialize
     from scipy.sparse import csc_matrix
-    h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.complex_) # create single particle hopping
+    h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.float32) # create single particle hopping
     h0 = h0 + h0.T # add the transpose
-    r = np.zeros((n,2),dtype=np.float_) # initialize
+    r = np.zeros((n,2),dtype=np.float32) # initialize
     r[:,0] = np.arange(n) # locations
     AB = np.array(np.arange(0,n))%2 # parity
     AB = AB*2 - 1. # +- 1
@@ -61,7 +61,7 @@ def square(L):
     n = 2**L # number of sites
     row,col,data = hopping_square(n) # return the hoppings
     from scipy.sparse import csc_matrix
-    h0 = csc_matrix((data,(row,col)),shape=(n**2,n**2),dtype=np.complex_) # create single particle hopping
+    h0 = csc_matrix((data,(row,col)),shape=(n**2,n**2),dtype=np.float32) # create single particle hopping
     r,AB = position_square(n) # return the positions for square lattice
     H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
     return H # return the Hamiltonian
@@ -76,7 +76,7 @@ def hopping_square(N):
     count = 0
     row = np.zeros(4*N**2,dtype=np.int_) # index
     col = np.zeros(4*N**2,dtype=np.int_) # index
-    data = np.zeros(4*N**2,dtype=np.float_) # index
+    data = np.zeros(4*N**2,dtype=np.float32) # index
     for i1 in range(N):
       for j1 in range(N):
           ind1 = i1*N + j1 # index for the first site 
@@ -101,8 +101,8 @@ def hopping_square(N):
 def position_square(N):
     """Return hopping for the square lattice"""
     count = 0
-    r = np.zeros((N**2,2),dtype=np.float_) # index
-    AB = np.zeros(N**2,dtype=np.float_) # index
+    r = np.zeros((N**2,2),dtype=np.float32) # index
+    AB = np.zeros(N**2,dtype=np.float32) # index
     for i1 in range(N): # first loop 
       for j1 in range(N): # second loop 
           r[count,0] = float(i1)
@@ -142,9 +142,9 @@ def add_onsite(self,f):
     """Add an onsite energy tot he Hamiltonian"""
     n = self.H.shape[0]
     rows,cols = np.array(range(n)),np.array(range(n)) # indexes
-    data = np.array([f(ri) for ri in self.R],dtype=np.complex_) 
+    data = np.array([f(ri) for ri in self.R],dtype=np.float32) 
     from scipy.sparse import csc_matrix
-    h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.complex_)
+    h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.float32)
     self.H = self.H + h0 # add the onsite energy
 
 
@@ -161,7 +161,7 @@ def honeycomb(L,periodic=False):
     n = 2**L # number of unit cells
     row,col,data = hopping_honeycomb(n,periodic=periodic) # return the hoppings
     from scipy.sparse import csc_matrix
-    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # create single particle hopping
+    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.float32) # create single particle hopping
     r,AB = position_honeycomb(n) # return the positions for square lattice
     H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
     return H # return the Hamiltonian
@@ -175,7 +175,7 @@ def hopping_honeycomb(N,periodic=False):
     count = 0 # counter
     row = np.zeros(4*3*N**2,dtype=np.int_) # index
     col = np.zeros(4*3*N**2,dtype=np.int_) # index
-    data = np.zeros(4*3*N**2,dtype=np.float_) # index
+    data = np.zeros(4*3*N**2,dtype=np.float32) # index
     for i1 in range(N): # loop over x unit cell index
       for j1 in range(N): # loop over y unit cell index
           ind1 = i1*N + j1 # index for the first UC 
@@ -212,8 +212,8 @@ def hopping_honeycomb(N,periodic=False):
 def position_honeycomb(N):
     """Return hopping for the square lattice"""
     count = 0
-    r = np.zeros((4*N**2,2),dtype=np.float_) # index
-    AB = np.zeros(4*N**2,dtype=np.float_) # index
+    r = np.zeros((4*N**2,2),dtype=np.float32) # index
+    AB = np.zeros(4*N**2,dtype=np.float32) # index
     a1 = np.array([3.,0.]) # shift in x
     a2 = np.array([0.,np.sqrt(3.)]) # shift in y
     for i1 in range(N): # first loop 

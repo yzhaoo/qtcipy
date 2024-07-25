@@ -60,6 +60,7 @@ def get_den(h,use_kpm=False,**kwargs):
 
 def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
                 log=None, # dictionary for logs
+                chiral_AF = False, # flag to enforce chiral AF
                 mix=0.3,info=False,**kwargs):
     """
     Perform a selfconsistent Hubbard calculation
@@ -87,7 +88,10 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         hup = h0 + diags(U*(ddn_old-0.5),shape=h0.shape) # up Hamiltonian
         hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian
         ddn = get_den(hdn,log=log0,**kwargs) # generate down density
-        dup = get_den(hup,log=log0,**kwargs) # generate up density
+        if chiral_AF: # by symmetry for chiral AF systems
+            dup = 1. - ddn # by symmetry
+        else: # compute explicitly
+            dup = get_den(hup,log=log0,**kwargs) # generate up density
         error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs
             log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
@@ -103,6 +107,11 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         ev = log0["QTCI_eval"] 
         ev = [(ev[2*i] + ev[2*i+1])/2. for i in range(len(ev)//2)] # resum
         log["QTCI_eval"] += ev # store
+    # convert to single (real) precision
+    hup = hup.astype(np.float32)
+    hdn = hdn.astype(np.float32)
+    dup = dup.astype(np.float32)
+    ddn = ddn.astype(np.float32)
     return hup,hdn,dup,ddn # return Hamiltonian and densities
 
 
