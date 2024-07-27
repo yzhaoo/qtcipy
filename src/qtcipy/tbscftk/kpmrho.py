@@ -205,12 +205,17 @@ def get_function(h,dim=1,**kwargs):
 import os ; import sys
 sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
-def get_dos_i(m,i=0,delta=1e-1,kpm_prec="single",
-        kernel="jackson",npol_scale=4,**kwargs):
+def get_dos_i(m,i=0,
+        kpm_delta=1e-1, # effective smearing
+        kpm_prec="single",
+        kpm_scale = 10.0, # scale of KPm method
+        kernel="jackson", # kernel 
+        npol_scale=4, # rescale number of polynomials
+        **kwargs):
     """Return electronic density at site i"""
+    delta = kpm_delta 
     ne = int(100/delta) # number of energies
-    scale = 10.0 # scale of KPM method
-#    delta = 0.1 # effective smearing
+    scale = kpm_scale # scale of KPM method
     from pyqula import kpm
     npol = int(npol_scale*scale/delta) # number of polynomials
     (es,ds) = kpm.ldos(m,i=i,ne=ne,kernel=kernel,kpm_prec=kpm_prec,

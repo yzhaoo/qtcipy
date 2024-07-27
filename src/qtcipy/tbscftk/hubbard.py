@@ -31,7 +31,7 @@ def get_density_i(m,fermi=0.,**kwargs):
 def get_den_ed(h,fermi=0.,**kwargs):
     """Return the total electronic density using exact diagonalization"""
     from scipy.linalg import eigh
-    if h.shape[0]>10000: raise # sanity check
+    if h.shape[0]>20000: raise # sanity check
     (es,ws) = eigh(h.todense()) # diagonalize
     ws = ws.T # wavefucntions as rows
     out = 0. # initialize
