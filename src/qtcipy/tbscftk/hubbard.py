@@ -75,6 +75,7 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
     if log is not None:
         log0 = dict()
         log0["QTCI_eval"] = []
+        log0["QTCI_error"] = []
         log0["opt_qtci_maxm"] = log["opt_qtci_maxm"]
     else: log0 = None # default
     ddn_old = ddn.copy() # make a copy

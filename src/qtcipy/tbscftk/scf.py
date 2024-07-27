@@ -19,6 +19,7 @@ class SCF_Hubbard():
         log = dict() # dictionary
         log["SCF_error"] = [] # initialize
         log["QTCI_eval"] = [] # initialize
+        log["QTCI_error"] = [] # initialize
         log["SCF_time"] = [] # initialize
         log["opt_qtci_maxm"] = 100 # reasonable initial guess
         self.log = log # store the log
