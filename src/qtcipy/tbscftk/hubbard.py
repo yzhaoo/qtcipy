@@ -94,7 +94,7 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
             dup = get_den(hup,log=log0,**kwargs) # generate up density
         error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs
-#            log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
+            log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
             log["SCF_time"].append(time.time() - t0) # store time
             log["SCF_error"].append(error) # store time
         if info: print("SCF Error",error,"iteration",ite)
@@ -105,9 +105,12 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
     if log is not None: # up down logs
         ev = log0["QTCI_eval"] 
+        qterr = log0["QTCI_error"] 
         if not chiral_AF: # resum if needed
             ev = [(ev[2*i] + ev[2*i+1])/2. for i in range(len(ev)//2)] # resum
+            qterr = [(qterr[2*i] + qterr[2*i+1])/2. for i in range(len(ev)//2)] # resum
         log["QTCI_eval"] += ev # store
+        log["QTCI_error"] += qterr # store
     # convert to single (real) precision
     hup = hup.astype(np.float32)
     hdn = hdn.astype(np.float32)

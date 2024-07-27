@@ -21,6 +21,7 @@ class Interpolator():
         self.qgrid = qgrid
         self.qtci_maxm = args.bondDim # store the bond dimension
         self.errors = ci.pivotError
+        self.error = err = ci.pivotError[len(ci.pivotError)-1]
         self.opt_qtci_maxm = opt_qtci_maxm
         self.R = nb
         self.qtt = ci.get_qtt()  # the actual function approximating f

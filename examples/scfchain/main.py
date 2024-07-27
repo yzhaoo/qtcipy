@@ -21,8 +21,8 @@ SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 
 #SCF.solve(info=True) # solve the SCF
 SCF.solve(info=True,use_qtci=True,
-#        qtci_maxm = 10, # bond dimension to use as initial guess
-#        qtci_recursive = True, # use a recursive mode, to enforce tol
+        qtci_maxm = 1, # bond dimension to use as initial guess
+        qtci_recursive = True, # use a recursive mode, to enforce tol
         qtci_tol = 1e-2, # error in quantics
         chiral_AF = True, # use symmetry for chiral models
         use_kpm=True) # solve the SCF

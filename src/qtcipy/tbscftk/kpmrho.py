@@ -84,7 +84,8 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
-#        log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
+        log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
+        log["QTCI_error"] = IP.error # store
 #    print(len(rse)/h.shape[0],"ratio of evaluations")
     if info_qtci:
          print(len(rse)/h.shape[0],"ratio of evaluations")
