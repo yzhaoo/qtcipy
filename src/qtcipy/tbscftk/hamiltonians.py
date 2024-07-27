@@ -13,7 +13,7 @@ class Hamiltonian():
         from .scf import SCF_Hubbard
         return SCF_Hubbard(self,**kwargs)
     def modify_hopping(self,*args,**kwargs):
-        return modify_hopping(self,*args)
+        return modify_hopping(self,*args,**kwargs)
     def add_onsite(self,*args,**kwargs):
         return add_onsite(self,*args)
     def get_density_i(self,**kwargs):
@@ -121,7 +121,7 @@ def position_square(N):
 
 
 
-def modify_hopping(self,f,**kwargs):
+def modify_hopping(self,f,use_dr=False,**kwargs):
     """Modify the hoppings of a Hamiltonian"""
     from scipy.sparse import coo_matrix
     m = self.H.copy() # get the matrix
@@ -132,7 +132,11 @@ def modify_hopping(self,f,**kwargs):
         jj = mo.col[i] # get this column
         d = mo.data[i] # get this data
         r = (R[ii] + R[jj])/2. # average location
-        d1 = d + f(r) # add a contribution
+        if use_dr:
+            dr = R[ii] - R[jj] # distance
+            d1 = d + f(r,dr) # add a contribution
+        else:
+            d1 = d + f(r) # add a contribution
         m[ii,jj] = d1 # store the new hopping
     self.H = m # store the new Hamiltonian
 

@@ -94,7 +94,7 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
             dup = get_den(hup,log=log0,**kwargs) # generate up density
         error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs
-            log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
+#            log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
             log["SCF_time"].append(time.time() - t0) # store time
             log["SCF_error"].append(error) # store time
         if info: print("SCF Error",error,"iteration",ite)

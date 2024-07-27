@@ -123,7 +123,7 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 
 #@retry(initialize=restart_julia)
 def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
-        qtci_tol=None,**kwargs):
+        qtci_tol=1e-2,**kwargs):
     """Return the interpolator"""
     from .. import interpolate
     if dim==1: # one dimensional
@@ -205,7 +205,7 @@ import os ; import sys
 sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 def get_dos_i(m,i=0,delta=1e-1,kpm_prec="single",
-        kernel="jackson",npol_scale=2,**kwargs):
+        kernel="jackson",npol_scale=4,**kwargs):
     """Return electronic density at site i"""
     ne = int(100/delta) # number of energies
     scale = 10.0 # scale of KPM method

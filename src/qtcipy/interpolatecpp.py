@@ -44,29 +44,36 @@ import numpy as np
 
 
 def get_ci(f, qgrid=None, nb=1,
+        qtci_recursive = False,
         qtci_maxm=3, # initial bond dimension
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
     maxm = qtci_maxm # initialize
     while True: # infinite loop until convergence is reached
         args = xfacpy.TensorCI2Param()  # fix the max bond dimension
-        args.bondDim = qtci_maxm
+        args.bondDim = maxm
         ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
+        # train quantics #
         while not ci.isDone(): # iterate until convergence
             ci.iterate()
-        evf = len(get_cache_info(f)[0])/(2**nb)
-        err = ci.pivotError[len(ci.pivotError)-1]
-        print("Eval frac = ",evf,"maxm = ",qtci_maxm,"error = ",err,"target = ",tol)
-        if tol is None: break # stop if no tolerance given
-        if err>tol: # do it again
-            m0 = qtci_maxm # store original one
-#            print("Quantics error",err,qtci_maxm,"target",tol)
-            qtci_maxm = int(qtci_maxm) + 5 # redefine
-#            print("New quantics bond dimension",qtci_maxm)
-#            print("Original quantics bond dimension",m0)
-            maxm = m0
-        else: break
-    return ci,args,qtci_maxm # return the optimal bond dimension
+            err = ci.pivotError[len(ci.pivotError)-1]
+            if tol is not None: # if tol given, break when tol reached
+                if err<tol: # tolerance reached
+                    print("QTCI tol reached",err," stopping training")
+                    break # stop loop
+        # evaluate error #
+        evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
+        err = ci.pivotError[len(ci.pivotError)-1] # error
+        print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
+        if tol is not None: # if enforce an error, check for convergence
+            if err<tol: break # if convergence, break
+            else: # no convergence
+                if not qtci_recursive: break # no recursive, just stop
+                else: # recursive mode
+                    maxm = maxm + 5 # for next iteration
+                    print("Recursive QTCI, next bond dim",maxm)
+        else: break # no error enforced, just stop
+    return ci,args,maxm # return the optimal bond dimension, for next iteration
 
 
 
