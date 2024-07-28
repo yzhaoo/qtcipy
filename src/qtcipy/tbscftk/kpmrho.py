@@ -230,14 +230,13 @@ import os ; import sys
 sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 def get_dos_i(m,i=0,
-        kpm_delta=1e-1, # effective smearing
+        delta=1e-1, # effective smearing
         kpm_prec="single",
         kpm_scale = 10.0, # scale of KPm method
         kernel="jackson", # kernel 
         npol_scale=4, # rescale number of polynomials
         **kwargs):
     """Return electronic density at site i"""
-    delta = kpm_delta 
     ne = int(100/delta) # number of energies
     scale = kpm_scale # scale of KPM method
     from pyqula import kpm

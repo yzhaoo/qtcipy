@@ -31,5 +31,23 @@ def get_ldos(m,info_qtci=True,i=None,**kwargs):
         return get_ldos_sparse(m,i=i,**kwargs) # return a single one
 
 
+def get_dos_i(H,w=None,**kwargs):
+    """DOS in one site"""
+    from .kpmrho import get_dos_i
+    if w is None: w = np.linspace(-5.,5.,1000)
+    return get_dos_i(H,x=w,**kwargs)
+
+
+
+def get_dos(m,i=None,ntries=10,**kwargs):
+    """Return the DOS, averaging over several vectors"""
+    o = []
+    d0 = 0.
+    if i is None: i = [ii for ii in range(m.shape[0])]
+    for i in range(ntries):
+        e,d = get_dos_i(m,**kwargs)
+        d0 = d0 + d
+    return e,d0/ntries
+
 
 

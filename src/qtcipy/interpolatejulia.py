@@ -5,6 +5,8 @@ class Interpolator():
     def __init__(self,f,xlim=[0.,1.],nb=20,tol=1e-2,dim=1,
             ylim=[0.,1.],zlim=[0.,1.],guess=None,**kwargs):
         """Initialize the interpolator object"""
+        from .interpolatecpp import memoize
+        f = memoize(f) # create a cache
 # Pass the Python function and variables to the Julia function
         if dim==1:
             ci,ranks,errors,qgrid = Main.initialize_interpolator_1d(f, xlim[0], xlim[1],nb,tol)

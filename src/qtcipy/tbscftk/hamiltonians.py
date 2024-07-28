@@ -32,6 +32,9 @@ class Hamiltonian():
         return get_ldos(self.H,**kwargs)
     def index_around_r(self,**kwargs):
         return index_around_r(self.R,**kwargs)
+    def get_dos(self,**kwargs):
+        from .ldos import get_dos
+        return get_dos(self.H,**kwargs)
 
 
 
