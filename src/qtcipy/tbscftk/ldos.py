@@ -44,8 +44,8 @@ def get_dos(m,i=None,ntries=10,**kwargs):
     o = []
     d0 = 0.
     if i is None: i = [ii for ii in range(m.shape[0])]
-    for i in range(ntries):
-        e,d = get_dos_i(m,**kwargs)
+    for j in range(ntries):
+        e,d = get_dos_i(m,i=i,**kwargs)
         d0 = d0 + d
     return e,d0/ntries
 

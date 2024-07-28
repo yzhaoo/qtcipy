@@ -142,6 +142,7 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         if info: 
             print("SCF Error",error,"iteration",ite)
             print("Average magnetization",np.mean(np.abs(ddn-dup)))
+            print("Max magnetization",np.max(np.abs(ddn-dup)))
         if error<maxerror: break # stop loop
         if maxite is not None:
             if ite>=maxite: break
