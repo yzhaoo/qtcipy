@@ -33,6 +33,7 @@ class SCF_Hubbard():
         dup0 = self.MF[0].copy() # first mean-field
         ddn0 = self.MF[1].copy() # second mean-field
         hup1,hdn1,dup1,ddn1 = SCF_Hubbard(h0,ddn=ddn0,dup=dup0,U=U,
+                AB=self.H0.AB,
                 dim=self.H0.dim, # dimensionality
                 log=self.log,**kwargs)
         self.H[0] = hup1.copy() # replace matrix

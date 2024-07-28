@@ -40,22 +40,61 @@ def get_den_ed(h,fermi=0.,**kwargs):
     return out
 
 
+
+
+
+
+def get_mz_ed(h,**kwargs):
+    """Magnetization for chiral systems"""
+    return (get_den_ed(h,**kwargs) - 0.5)*2 # magnetization
+
+
+
+
+
+
+
 def get_den_kpm(h,use_qtci=True,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
-#    @memoize
-    def f(i): # function to interpolate
-        return get_density_i(h,i=int(i),**kwargs)
     if use_qtci: # use quantics tensor cross interpolation
         from .kpmrho import get_den_kpm_qtci
         return get_den_kpm_qtci(h,**kwargs)
     else: # brute force
+        def f(i): # function to interpolate
+            return get_density_i(h,i=int(i),**kwargs)
         return np.array([f(i) for i in range(0,h.shape[0])])
+
+
+
+def get_mz_kpm(h,use_qtci=True,**kwargs):
+    """Return the electronic density of the system uisng KPM and QTCI"""
+    if use_qtci: # use quantics tensor cross interpolation
+        from .kpmrho import get_mz_kpm_qtci
+        return get_mz_kpm_qtci(h,**kwargs)
+    else: # brute force
+        def f(i): # function to interpolate
+            dup = get_density_i(h,i=int(i),**kwargs)
+            return dup - 0.5 # magnetization
+        return np.array([f(i) for i in range(0,h.shape[0])])
+
+
+
+
+
 
 
 def get_den(h,use_kpm=False,**kwargs):
     """Get the electronic density of a matrix"""
     if use_kpm: return get_den_kpm(h,**kwargs) # compute using the KPM
-    else: return get_den_ed(h,**kwargs) # compute using the KPM
+    else: return get_den_ed(h,**kwargs) # compute using ED
+
+
+
+def get_mz(h,use_kpm=False,**kwargs):
+    """Get the electronic density of a matrix"""
+    if use_kpm: return get_mz_kpm(h,**kwargs) # compute using the KPM
+    else: return get_mz_ed(h,**kwargs) # compute using ED
+
 
 
 def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
@@ -88,10 +127,12 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         ite += 1 # iteration
         hup = h0 + diags(U*(ddn_old-0.5),shape=h0.shape) # up Hamiltonian
         hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian
-        ddn = get_den(hdn,log=log0,**kwargs) # generate down density
         if chiral_AF: # by symmetry for chiral AF systems
-            dup = 1. - ddn # by symmetry
+            mz = get_mz(hup,log=log0,**kwargs)
+            dup = 0.5 + mz/2.
+            ddn = 0.5 - mz/2.
         else: # compute explicitly
+            ddn = get_den(hdn,log=log0,**kwargs) # generate down density
             dup = get_den(hup,log=log0,**kwargs) # generate up density
         error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs

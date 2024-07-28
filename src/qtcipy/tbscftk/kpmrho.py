@@ -81,16 +81,46 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     IP = get_interpolator(h,f,nb,lim,
             qtci_maxm=qtci_maxm,
             **kwargs) # keyword arguments
+    update_log(log,h,IP) # update the log
+    if info_qtci:
+         print(len(rse)/h.shape[0],"ratio of evaluations")
+    out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
+    return out # return the output
+
+
+def update_log(log,h,IP):
+    """Update the log"""
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
         log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
         log["QTCI_error"].append(IP.error) # store
-#    print(len(rse)/h.shape[0],"ratio of evaluations")
+
+
+
+
+def get_mz_kpm_qtci(h,info_qtci=False,AB=None,log=None,**kwargs):
+    """Return the magnetization of the system uisng KPM and QTCI"""
+    f0 = get_function(h,**kwargs) # get the density to interpolate
+    if AB is None:
+        print("chiral mode requires sublattice")
+        raise
+    def f(i): # new function
+        return AB[int(i)]*(f0(i)-0.5)*2. # magnetization
+    nb = get_nbits(h,**kwargs) # return the number of bits
+    lim = get_lim(h,**kwargs) # get the limits
+    if log is not None: qtci_maxm = log["opt_qtci_maxm"] # get the maxm
+    else: qtci_maxm = 5 # reasonable guess
+    IP = get_interpolator(h,f,nb,lim,
+            qtci_maxm=qtci_maxm,
+            **kwargs) # keyword arguments
+    update_log(log,h,IP) # update the log
     if info_qtci:
          print(len(rse)/h.shape[0],"ratio of evaluations")
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
-    return out # return the output
+    out = AB*out # redefine
+    return np.array(out) # return the output magnetization
+
 
 
 
@@ -101,8 +131,8 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
     if dim==1: # 1D
         out = np.zeros(nat,dtype=np.float32) # initialize
         for i in range(nat): out[i] = IP(float(i)) # store result
-        out[out<0.] = 0. # bounds
-        out[out>1.] = 1. # bounds
+#        out[out<0.] = 0. # bounds
+#        out[out>1.] = 1. # bounds
         return out
     elif dim==2: # 2D
         raise
@@ -118,11 +148,6 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 
 
 
-# decorator to recover the Julia session
-#from ..recover import retry
-#from ..juliasession import restart as restart_julia
-
-#@retry(initialize=restart_julia)
 def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
         qtci_tol=1e-2,**kwargs):
     """Return the interpolator"""
@@ -183,15 +208,16 @@ def get_function(h,dim=1,**kwargs):
         if out<0.: return 0.
         if out>1.: return 1.0
         else: return out
-#    @memoize
-    def f2d(i,j): # function to interpolate
-        n = h.shape[0] # number of sites
-        n = int(np.sqrt(n)) # lateral size of the system
-        ii = n*i + j # index in real space
-        return get_density_i(h,i=int(ii),**kwargs)
-    if dim==1: return f1d
-    elif dim==2: return f2d
-    else: raise
+    return f1d
+##    @memoize
+#    def f2d(i,j): # function to interpolate
+#        n = h.shape[0] # number of sites
+#        n = int(np.sqrt(n)) # lateral size of the system
+#        ii = n*i + j # index in real space
+#        return get_density_i(h,i=int(ii),**kwargs)
+#    if dim==1: return f1d
+#    elif dim==2: return f2d
+#    else: raise
 
 
 
@@ -232,9 +258,12 @@ def estimate_qtci_maxm(h,R,f,qtci_tol=1e-2,**kwargs):
     lim = get_lim(h,**kwargs) # get the limits
     fo = lambda i: f(R[int(i),:])
     IP = interpolate.Interpolator(fo,tol=qtci_tol,nb=nb,xlim=lim[0],
-                dmaxm=1,
+                qtci_recursive = True,
                 dim=1,backend="C++")
     return IP.opt_qtci_maxm 
+
+
+
 
 
 

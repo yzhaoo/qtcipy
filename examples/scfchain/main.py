@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 3 # exponential length
+L = 5 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -20,12 +20,13 @@ SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 
 
 #SCF.solve(info=True) # solve the SCF
-SCF.solve(info=True,use_qtci=True,
-        qtci_maxm = 1, # bond dimension to use as initial guess
+SCF.solve(info=True,
+        use_qtci=True,use_kpm = True,
+        qtci_maxm = 10, # bond dimension to use as initial guess
 #        qtci_recursive = True, # use a recursive mode, to enforce tol
         qtci_tol = 1e-2, # error in quantics
         chiral_AF = True, # use symmetry for chiral models
-        use_kpm=True) # solve the SCF
+        ) # solve the SCF
 #SCF.save()
 #SCF = SCF.load()
 #print("Loading from file")
