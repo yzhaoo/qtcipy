@@ -98,7 +98,9 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
             log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
             log["SCF_time"].append(time.time() - t0) # store time
             log["SCF_error"].append(error) # store time
-        if info: print("SCF Error",error,"iteration",ite)
+        if info: 
+            print("SCF Error",error,"iteration",ite)
+            print("Average magnetization",np.mean(np.abs(ddn-dup)))
         if error<maxerror: break # stop loop
         if maxite is not None:
             if ite>=maxite: break

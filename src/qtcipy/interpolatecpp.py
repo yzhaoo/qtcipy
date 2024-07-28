@@ -46,7 +46,7 @@ import numpy as np
 
 def get_ci(f, qgrid=None, nb=1,
         qtci_recursive = False,
-        qtci_maxm=3, # initial bond dimension
+        qtci_maxm=20, # initial bond dimension
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
     maxm = qtci_maxm # initialize

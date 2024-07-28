@@ -1,3 +1,7 @@
+import numpy as np
+
+import os ; import sys
+sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 
 from pyqula.ldostk.sparseldos import get_ldos as get_ldos_sparse
