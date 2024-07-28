@@ -24,9 +24,11 @@ class Interpolator():
         self.ylim = ylim
         self.zlim = zlim
         self.ranks = ranks
+        self.opt_qtci_maxm = ranks[-1]
         self.dim = dim
         self.tol = tol
         self.errors = errors
+        self.error = errors[-1]
         self.qgrid = qgrid
         self.R = nb
     def __call__(self,xs,y=None,z=None):

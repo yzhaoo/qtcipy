@@ -71,7 +71,7 @@ def get_den_kpm_qtci(h,**kwargs):
 
 
 
-def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
+def get_den_kpm_qtci_general(h,log=None,**kwargs):
     """Return the electronic density of the system uisng KPM and QTCI"""
     f = get_function(h,**kwargs) # get the function to interpolate
     nb = get_nbits(h,**kwargs) # return the number of bits
@@ -81,25 +81,25 @@ def get_den_kpm_qtci_general(h,info_qtci=False,log=None,**kwargs):
     IP = get_interpolator(h,f,nb,lim,
             qtci_maxm=qtci_maxm,
             **kwargs) # keyword arguments
-    update_log(log,h,IP) # update the log
-    if info_qtci:
-         print(len(rse)/h.shape[0],"ratio of evaluations")
+    update_log(log,h,IP,**kwargs) # update the log
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
     return out # return the output
 
 
-def update_log(log,h,IP):
+def update_log(log,h,IP,info_qtci=False,**kwargs):
     """Update the log"""
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
         log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
         log["QTCI_error"].append(IP.error) # store
+    if info_qtci:
+         print(len(rse)/h.shape[0],"ratio of evaluations")
 
 
 
 
-def get_mz_kpm_qtci(h,info_qtci=False,AB=None,log=None,**kwargs):
+def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
     """Return the magnetization of the system uisng KPM and QTCI"""
     f0 = get_function(h,**kwargs) # get the density to interpolate
     if AB is None:
@@ -114,9 +114,7 @@ def get_mz_kpm_qtci(h,info_qtci=False,AB=None,log=None,**kwargs):
     IP = get_interpolator(h,f,nb,lim,
             qtci_maxm=qtci_maxm,
             **kwargs) # keyword arguments
-    update_log(log,h,IP) # update the log
-    if info_qtci:
-         print(len(rse)/h.shape[0],"ratio of evaluations")
+    update_log(log,h,IP,**kwargs) # update the log
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
     out = AB*out # redefine
     return np.array(out) # return the output magnetization
