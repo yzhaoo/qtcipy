@@ -38,6 +38,14 @@ class Hamiltonian():
 
 
 
+def matrix2array(H):
+    """Convert a matrix into an array"""
+    mo = [H[i,:].sum() for i in range(H.shape[0])]
+    return np.array(mo)
+
+
+
+
 
 def chain(L):
     """Hamiltonian of a chain"""

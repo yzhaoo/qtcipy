@@ -29,6 +29,8 @@ class Interpolator():
         self.opt_qtci_maxm = ranks[-1]
         self.dim = dim
         self.tol = tol
+        rse,zse = self.get_evaluated()
+        self.frac = len(rse)/(2**nb)
         self.errors = errors
         self.error = errors[-1]
         self.qgrid = qgrid

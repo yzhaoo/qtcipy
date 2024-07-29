@@ -20,54 +20,12 @@ def memoize(func):
 #
 #
 
-from functools import lru_cache
-#
-#def memoize(func):
-#    """Decorator to use a cache with LRU eviction policy"""
-#    # Wrap the function with lru_cache
-#    cached_func = lru_cache(maxsize=1000)(func)
-#    return cached_func
-#
-
-#from functools import cache as memoize
 
 
 
 def get_den_kpm_qtci(h,**kwargs):
     """Return the full density using QTCI"""
-#        return get_den_kpm_qtci_1d(h,**kwargs)
     return get_den_kpm_qtci_general(h,**kwargs)
-#    if dim==1: # 1d geometry
-#        return get_den_kpm_qtci_1d(h,**kwargs)
-#    elif dim==2: # 2d geometry
-#        return get_den_kpm_qtci_2d(h,**kwargs)
-
-
-#
-#def get_den_kpm_qtci_1d(h,info_qtci=False,log=None,**kwargs):
-#    """Return the electronic density of the system uisng KPM and QTCI"""
-#    @memoize
-#    def f(i): # function to interpolate
-#        return get_density_i(h,i=int(i),**kwargs)
-#    xlim = [0,h.shape[0]] # limits of the interpolation
-#    nb = np.log(h.shape[0])/np.log(2) # number of pseudospin sites
-#    nat = h.shape[0] # number of atoms
-#    if np.abs(int(nb)-nb)>1e-5:
-#        print("Number of points must be a power of 2")
-#        raise
-#    nb = int(nb) # number of points
-#    from .. import interpolate
-#    IP = interpolate.Interpolator(f,tol=1e-3,nb=nb,xlim=xlim,dim=1)
-#    if log is not None: # make a log
-#        rse,zse = IP.get_evaluated()
-#        log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
-#    if info_qtci:
-#         print(len(rse)/h.shape[0],"ratio of evaluations")
-#    out = np.zeros(nat,dtype=np.float_) # initialize
-#    for i in range(nat): out[i] = IP(float(i)) # store result
-#    return out # return the output
-#
-#
 
 
 
@@ -133,7 +91,7 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 #        out[out>1.] = 1. # bounds
         return out
     elif dim==2: # 2D
-        raise
+#        raise
         print("Using 2D")
         n = int(np.sqrt(nat)) # lateral size of the system
         out = np.zeros(nat,dtype=np.float_) # initialize
@@ -162,13 +120,14 @@ def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
 
 
 
-def get_lim(h,dim=1,**kwargs):
+def get_lim(h,dim=1,norb=1,**kwargs):
     """Return the limits"""
     if dim==1: # one dimensional
         xlim = [0,h.shape[0]] # limits of the interpolation
         return xlim,None
     elif dim==2: # two dimensional
         n = h.shape[0] # number of sites
+        if norb>1: n = n//norb # by the number of orbitals
         n = int(np.sqrt(n)) # lateral size of the system
         xlim = [0,n] # limits of the interpolation
         return xlim,xlim # return the limits
@@ -177,9 +136,10 @@ def get_lim(h,dim=1,**kwargs):
 
 
 
-def get_nbits(h,dim=1,**kwargs):
+def get_nbits(h,norb=1,dim=1,**kwargs):
     """Get the number of required bits"""
     n = h.shape[0] # number of sites
+    if norb>1: n = n//norb # number of cells
     if dim==1: pass # ignore for 1d
     elif dim==2: # 2d
       n = int(np.sqrt(n)) # lateral size of the system
@@ -192,9 +152,8 @@ def get_nbits(h,dim=1,**kwargs):
 
 
 
-def get_function(h,dim=1,**kwargs):
+def get_function(h,dim=1,norb=1,**kwargs):
     """Return the function to interpolate"""
-#    @memoize
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
         if not 0<=ii<h.shape[0]: # fix and say
@@ -202,20 +161,24 @@ def get_function(h,dim=1,**kwargs):
             if ii<0: ii = 0 # fix
             else: ii = h.shape[0]-1 # last one
         out = get_density_i(h,i=ii,**kwargs) # get the density
+        return out
         # rescale to interval 0,1
-        if out<0.: return 0.
-        if out>1.: return 1.0
-        else: return out
-    return f1d
-##    @memoize
-#    def f2d(i,j): # function to interpolate
-#        n = h.shape[0] # number of sites
-#        n = int(np.sqrt(n)) # lateral size of the system
-#        ii = n*i + j # index in real space
-#        return get_density_i(h,i=int(ii),**kwargs)
-#    if dim==1: return f1d
-#    elif dim==2: return f2d
-#    else: raise
+#        if out<0.: return 0.
+#        if out>1.: return 1.0
+#        else: return out
+#    return f1d
+    def f2d(i,j,iorb=0): # function to interpolate
+        n = h.shape[0] # number of sites
+        if norb>1: # more than one orbital
+            n = int(np.sqrt(n/norb)) # lateral size of the system
+            ii = (n*i + j)*norb + iorb # index in real space
+        else: # one orbital
+            n = int(np.sqrt(n)) # lateral size of the system
+            ii = n*i + j # index in real space
+        return get_density_i(h,i=int(ii),**kwargs)
+    if dim==1: return f1d
+    elif dim==2: return f2d
+    else: raise
 
 
 
@@ -253,11 +216,15 @@ def estimate_qtci_maxm(h,R,f,qtci_tol=1e-2,**kwargs):
     from .. import interpolate
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
-    fo = lambda i: f(R[int(i),:])
+    if callable(f): # if function provided
+        fo = lambda i: f(R[int(i),:]) # assume it is a function
+    else:
+        fo = lambda i: f[int(i)] # assume it is an array/list
     IP = interpolate.Interpolator(fo,tol=qtci_tol,nb=nb,xlim=lim[0],
                 qtci_recursive = True,
-                dim=1,backend="C++")
-    return IP.opt_qtci_maxm 
+                **kwargs,
+                dim=1)
+    return IP.opt_qtci_maxm,IP.frac 
 
 
 

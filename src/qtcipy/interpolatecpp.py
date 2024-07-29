@@ -24,6 +24,8 @@ class Interpolator():
         self.error = err = ci.pivotError[len(ci.pivotError)-1]
         self.opt_qtci_maxm = opt_qtci_maxm
         self.R = nb
+        rse,zse = self.get_evaluated()
+        self.frac = len(rse)/(2**nb)
         self.qtt = ci.get_qtt()  # the actual function approximating f
     def __call__(self,xs):
         if is_iterable(xs):

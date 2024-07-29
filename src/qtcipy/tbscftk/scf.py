@@ -69,8 +69,10 @@ class SCF_Hubbard():
         (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
         (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
         return es,dup-ddn # return energy and DOS
-    def estimate_qtci_maxm(self,f,**kwargs):
+    def estimate_qtci_maxm(self,**kwargs):
         from .kpmrho import estimate_qtci_maxm
+        from .hamiltonians import matrix2array
+        f = matrix2array(self.H0.H)*self.H0.AB
         return estimate_qtci_maxm(self.H0.H,self.H0.R,f,**kwargs)
     def save(self,**kwargs):
         from .saveload import save_SCF
