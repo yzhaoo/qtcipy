@@ -3,12 +3,13 @@
 
 import os
 try: # try using global Julia
-    import julia as jl
+#    import julia as jl
+    from julia import Julia
 except:
     path = os.path.dirname(os.path.realpath(__file__))
     import sys
     sys.path.append(path+"/pylib") # add the local julia
-    print("Using the local Julia")
+    print("Using the local Julia library for Python")
     import julia as jl
 
 
