@@ -42,13 +42,15 @@ def interpolate_norb(f,dim=1,norb=1,**kwargs):
     print("#################################")
     print("### Multiorbital interpolator ###")
     print("#################################")
-    for iorb in range(norb): # get one interpolator for each orbital
+    def get_IP(iorb): # return the interpolator
         if dim==1: # one dimensional
             def fi(ii): return f(ii*norb + iorb) # redefine function
             IP = Interpolator_single(fi,dim=dim,**kwargs) # new interpolator
         else: raise # not implemented
         IP = Discrete_Interpolator(IP) # redefine
-        IPs.append(IP) # store interpolator
+        return IP
+    from .. import parallel
+    IPs = parallel.pcall(get_IP,range(norb)) # call all
     IP = Interpolator_norb(IPs) # full interpolator
     return IP
 
