@@ -49,11 +49,11 @@ def interpolate_norb(f,dim=1,norb=1,**kwargs):
         else: raise # not implemented
         IP = Discrete_Interpolator(IP) # redefine
         IPs.append(IP) # store interpolator
-    IP = Interpolate_norb(IPs) # full interpolator
+    IP = Interpolator_norb(IPs) # full interpolator
     return IP
 
 
-class Interpolate_norb():
+class Interpolator_norb():
     def __init__(self,IPs): 
         # do nothing
         self.nb = IPs[0].nb # number of bits

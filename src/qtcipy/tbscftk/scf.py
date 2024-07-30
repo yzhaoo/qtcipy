@@ -9,7 +9,7 @@ class SCF_Hubbard():
         self.H0 = H # store initial Hamiltonian
         self.H = [H.H.copy(),H.H.copy()] # store initial Hamiltonian
         if MF is None:
-            dup0 = 0.2*H.AB # initialize
+            dup0 = 0.02*H.AB # initialize
             ddn0 = -dup0.copy() # initialize
             MF = [dup0,ddn0] # store
         self.MF = MF # store the mean-field guess
