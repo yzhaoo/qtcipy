@@ -6,7 +6,7 @@ sys.path.append(os.environ["PYQULAROOT"])
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 6 # exponential length
+L = 4 # exponential length
 H = hamiltonians.honeycomb(L,periodic=True) # get the Hamiltonian
 
 from pyqula.strain import graphene_buckling
@@ -37,7 +37,7 @@ SCF.solve(info=True,
         use_kpm=True,
         backend="C++",
         norb = 2,
-        qtci_maxm = 10,
+        qtci_maxm = 20,
         qtci_tol = None,
         ) # solve the SCF
 
