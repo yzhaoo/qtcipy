@@ -22,6 +22,7 @@ class Interpolator():
                     zlim[0], zlim[1],
                     nb,tol)
         self.ci = ci
+        self.nb = nb
         self.xlim = xlim
         self.ylim = ylim
         self.zlim = zlim
@@ -37,7 +38,7 @@ class Interpolator():
         self.R = nb
     def __call__(self,xs,y=None,z=None):
         if self.dim==1:
-            ys = Main.call_qtci_1d(xs, self.qgrid, self.ci)
+            ys = Main.call_qtci_1d(float(xs), self.qgrid, self.ci)
         elif self.dim==2:
             ys = Main.call_qtci_2d(xs,y, self.qgrid, self.ci)
         elif self.dim==3:
@@ -54,5 +55,8 @@ class Interpolator():
         else: raise
     def get_evaluated(self):
         return Main.evaluated_points(self.ci)
+    def copy(self):
+        from copy import deepcopy
+        return deepcopy(self)
 
 

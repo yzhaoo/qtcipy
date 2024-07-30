@@ -48,11 +48,11 @@ def update_log(log,h,IP,info_qtci=False,**kwargs):
     """Update the log"""
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
-        log["QTCI_eval"].append(len(rse)/h.shape[0]) # ratio of evaluations
+        log["QTCI_eval"].append(IP.frac) # ratio of evaluations
         log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
         log["QTCI_error"].append(IP.error) # store
     if info_qtci:
-         print(len(rse)/h.shape[0],"ratio of evaluations")
+         print(IP.frac,"ratio of evaluations")
 
 
 
@@ -107,7 +107,7 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
 def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
         qtci_tol=1e-2,**kwargs):
     """Return the interpolator"""
-    from .. import interpolate
+    from . import discreteinterpolator as interpolate
     if dim==1: # one dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
                 dim=1,backend=backend,**kwargs)
@@ -123,7 +123,9 @@ def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
 def get_lim(h,dim=1,norb=1,**kwargs):
     """Return the limits"""
     if dim==1: # one dimensional
-        xlim = [0,h.shape[0]] # limits of the interpolation
+        n = h.shape[0] # number of sites
+        if norb>1: n = n//norb # by the number of orbitals
+        xlim = [0,n] # limits of the interpolation
         return xlim,None
     elif dim==2: # two dimensional
         n = h.shape[0] # number of sites
@@ -152,8 +154,9 @@ def get_nbits(h,norb=1,dim=1,**kwargs):
 
 
 
-def get_function(h,dim=1,norb=1,**kwargs):
+def get_function(h,dim=1,**kwargs):
     """Return the function to interpolate"""
+    ### norb only implemented for 2d ###
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
         if not 0<=ii<h.shape[0]: # fix and say
@@ -162,19 +165,10 @@ def get_function(h,dim=1,norb=1,**kwargs):
             else: ii = h.shape[0]-1 # last one
         out = get_density_i(h,i=ii,**kwargs) # get the density
         return out
-        # rescale to interval 0,1
-#        if out<0.: return 0.
-#        if out>1.: return 1.0
-#        else: return out
-#    return f1d
-    def f2d(i,j,iorb=0): # function to interpolate
+    def f2d(i,j): # function to interpolate
         n = h.shape[0] # number of sites
-        if norb>1: # more than one orbital
-            n = int(np.sqrt(n/norb)) # lateral size of the system
-            ii = (n*i + j)*norb + iorb # index in real space
-        else: # one orbital
-            n = int(np.sqrt(n)) # lateral size of the system
-            ii = n*i + j # index in real space
+        n = int(np.sqrt(n)) # lateral size of the system
+        ii = n*i + j # index in real space
         return get_density_i(h,i=int(ii),**kwargs)
     if dim==1: return f1d
     elif dim==2: return f2d
@@ -213,7 +207,7 @@ def get_dos_i(m,i=0,
 
 def estimate_qtci_maxm(h,R,f,qtci_tol=1e-2,**kwargs):
     """Estimate a good guess for the bond dimension"""
-    from .. import interpolate
+    from . import discreteinterpolator as interpolate
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
     if callable(f): # if function provided

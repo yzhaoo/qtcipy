@@ -8,6 +8,7 @@ class Hamiltonian():
         self.H = H # matrix
         self.R = R - np.mean(R,axis=0) # center in 0
         self.AB = AB # sublattice
+        self.norb = 1 # single orbital
     def get_SCF_Hubbard(self,**kwargs):
         """Return the SCF object"""
         from .scf import SCF_Hubbard
@@ -40,7 +41,17 @@ class Hamiltonian():
 
 def matrix2array(H):
     """Convert a matrix into an array"""
-    mo = [H[i,:].sum() for i in range(H.shape[0])]
+    def sum_row_csc(matrix):
+        from scipy.sparse import coo_matrix
+        mi = coo_matrix(matrix)
+        row = mi.row
+        col = mi.col
+        data = mi.data
+        def f(r):
+            return np.sum(data[col==r])
+        return f
+    f = sum_row_csc(H) # generate the function
+    mo = [f(i) for i in range(H.shape[0])]
     return np.array(mo)
 
 
@@ -66,11 +77,11 @@ def chain(L):
 
 
 
-def square(L):
+def square(L,periodic=False):
     """Hamiltonian of a square lattice"""
     # define a first neighbor tight binding model
     n = 2**L # number of sites
-    row,col,data = hopping_square(n) # return the hoppings
+    row,col,data = hopping_square(n,periodic=periodic) # return the hoppings
     from scipy.sparse import csc_matrix
     h0 = csc_matrix((data,(row,col)),shape=(n**2,n**2),dtype=np.float32) # create single particle hopping
     r,AB = position_square(n) # return the positions for square lattice
@@ -82,7 +93,7 @@ from numba import jit
 
 # Hopping for the square lattice
 @jit(nopython=True)
-def hopping_square(N):
+def hopping_square(N,periodic=False):
     """Return hopping for the square lattice"""
     count = 0
     row = np.zeros(4*N**2,dtype=np.int_) # index
@@ -94,6 +105,9 @@ def hopping_square(N):
           for di,dj in [[-1,0],[1,0],[0,1],[0,-1]]:
                 i2 = i1 + di
                 j2 = j1 + dj
+                if periodic: # periodic boundary conditions
+                    i2 = i2%N
+                    j2 = j2%N
                 ind2 = i2*N + j2 # index for the second side
                 if 0<=i2<N and 0<=j2<N: # no overflow
                     row[count] = ind1 # store index

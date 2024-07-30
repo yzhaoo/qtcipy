@@ -4,8 +4,8 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 6 # exponential length
-H = hamiltonians.square(L) # get the Hamiltonian
+L = 5 # exponential length
+H = hamiltonians.square(L,periodic=True) # get the Hamiltonian
 
 # get the SCF object
 
@@ -14,7 +14,7 @@ def fhop(r):
     return 0.2*(np.cos(omega*r[0]) + np.cos(omega*r[1]))
 
 H.modify_hopping(fhop)
-H.dim = 2
+#H.dim = 2
 SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 SCF.solve(info=True,use_qtci=True,
         info_qtci=True,
