@@ -24,7 +24,6 @@ fhop0 = graphene_buckling(omega=omega/7,dt=0.1) # function for buckled lattices
 fhop = lambda r,dr: fhop0(r,dr) - 1.0 # redefine
 H.modify_hopping(fhop,use_dr = True) # modify the hoppings, again
 
-SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 
 from qtcipy import parallel
 
@@ -32,6 +31,7 @@ import time
 
 
 def execute(): # function to execute
+    SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
     SCF.solve(maxite = 1,
         chiral_AF = True,
         use_qtci=True,
