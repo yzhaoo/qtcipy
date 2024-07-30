@@ -6,8 +6,9 @@ sys.path.append(os.environ["PYQULAROOT"])
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 4 # exponential length
+L = 6 # exponential length
 H = hamiltonians.honeycomb(L,periodic=True) # get the Hamiltonian
+
 
 from pyqula.strain import graphene_buckling
 
@@ -27,19 +28,34 @@ SCF = H.get_SCF_Hubbard(U=2.0) # generate a selfconsistent object
 
 from qtcipy import parallel
 
-parallel.cores = 2
+import time
 
-SCF.solve(info=True,
-        maxite = 1,
+
+def execute(): # function to execute
+    SCF.solve(maxite = 1,
         chiral_AF = True,
-        info_qtci=True,
         use_qtci=True,
         use_kpm=True,
         backend="C++",
         norb = 2,
-        qtci_maxm = 20,
+#        kpm_cpugpu="GPU",
+        qtci_maxm = 10,
         qtci_tol = None,
         ) # solve the SCF
 
 
+t0 = time.time()
+parallel.cores = 1
+execute()
+t1 = time.time()
+dt_se = t1-t0
 
+
+
+t0 = time.time()
+parallel.cores = 2
+execute()
+t1 = time.time()
+dt_pa = t1-t0
+print("Time spent in serial execution",dt_se)
+print("Time spent in parallel execution",dt_pa)
