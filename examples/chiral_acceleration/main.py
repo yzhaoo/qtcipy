@@ -20,8 +20,8 @@ SCF_QT = H.get_SCF_Hubbard(U=U) # generate a selfconsistent object
 SCF_ED.solve() # full solution
 SCF_QT.solve(use_qtci=True,use_kpm = True,
 #        qtci_maxm=10,
-        backend = "Julia",
-        qtci_tol = 1e-2,
+        backend = "C++",
+#        qtci_tol = 1e-2,
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF
 

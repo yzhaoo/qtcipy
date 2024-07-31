@@ -64,7 +64,8 @@ def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
         print("chiral mode requires sublattice")
         raise
     def f(i): # new function
-        return AB[int(i)]*(f0(i)-0.5)*2. # magnetization
+#        return AB[int(i)]*(f0(i)-0.5)*2. # magnetization
+        return (f0(i)-0.5)*2. # magnetization
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
     if log is not None: qtci_maxm = log["opt_qtci_maxm"] # get the maxm
@@ -74,7 +75,7 @@ def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
             **kwargs) # keyword arguments
     update_log(log,h,IP,**kwargs) # update the log
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
-    out = AB*out # redefine
+#    out = AB*out # redefine
     return np.array(out) # return the output magnetization
 
 

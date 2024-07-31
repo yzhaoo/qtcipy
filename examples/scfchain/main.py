@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 12 # exponential length
+L = 4 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -24,8 +24,9 @@ SCF.solve(info=True,
         use_qtci=True,use_kpm = True,
         info_qtci = True,
 #        qtci_maxm = 10, # bond dimension to use as initial guess
-        backend = "Julia",
+        backend = "C++",
 #        qtci_recursive = True, # use a recursive mode, to enforce tol
+#        qtci_pivot1 = 10,
         qtci_tol = 1e-2, # error in quantics
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF

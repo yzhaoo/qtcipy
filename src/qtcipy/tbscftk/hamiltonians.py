@@ -1,4 +1,5 @@
 import numpy as np
+from numba import jit
 
 class Hamiltonian():
     """Class for a Hamiltonian"""
@@ -36,24 +37,29 @@ class Hamiltonian():
     def get_dos(self,**kwargs):
         from .ldos import get_dos
         return get_dos(self.H,**kwargs)
+    def get_moire(self):
+        """Extract the approximate moire pattern of the system"""
+        out = matrix2array(self.H)
+        return out
 
 
 
 def matrix2array(H):
     """Convert a matrix into an array"""
-    def sum_row_csc(matrix):
-        from scipy.sparse import coo_matrix
-        mi = coo_matrix(matrix)
-        row = mi.row
-        col = mi.col
-        data = mi.data
-        def f(r):
-            return np.sum(data[col==r])
-        return f
-    f = sum_row_csc(H) # generate the function
-    mo = [f(i) for i in range(H.shape[0])]
-    return np.array(mo)
-
+    from scipy.sparse import coo_matrix
+    mi = coo_matrix(H)
+    row = mi.row
+    col = mi.col
+    data = mi.data
+    out = np.zeros(mi.shape[0]) # output
+    @jit(nopython=True)
+    def f(data,row,col,out):
+        for i in range(len(data)): # loop over data
+            r,c = row[i],col[i]
+            out[r] = out[r] + data[i]
+        return out
+    out = f(data,row,col,out)
+    return out
 
 
 
@@ -89,7 +95,6 @@ def square(L,periodic=False):
     return H # return the Hamiltonian
 
 
-from numba import jit
 
 # Hopping for the square lattice
 @jit(nopython=True)

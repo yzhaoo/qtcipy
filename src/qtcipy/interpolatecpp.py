@@ -48,13 +48,19 @@ import numpy as np
 
 def get_ci(f, qgrid=None, nb=1,
         qtci_recursive = False,
+        qtci_pivot1 = None, # no initial guess
         qtci_maxm=20, # initial bond dimension
+        info_qtci = False,
+        qtci_fullPiv = False,
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
     maxm = qtci_maxm # initialize
     while True: # infinite loop until convergence is reached
         args = xfacpy.TensorCI2Param()  # fix the max bond dimension
         args.bondDim = maxm
+        if qtci_pivot1 is None: args.pivot1 = qgrid.coord_to_id([0.]) # in the first point
+        else: args.pivot1 = qgrid.coord_to_id([qtci_pivot1]) # in the first point
+        args.fullPiv = qtci_fullPiv # search the full Pi matrix
         ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
         # train quantics #
         while not ci.isDone(): # iterate until convergence
@@ -62,12 +68,14 @@ def get_ci(f, qgrid=None, nb=1,
             err = ci.pivotError[len(ci.pivotError)-1]
             if tol is not None: # if tol given, break when tol reached
                 if err<tol: # tolerance reached
-                    print("QTCI tol reached",err," stopping training")
+                    if info_qtci:
+                        print("QTCI tol reached",err," stopping training")
                     break # stop loop
         # evaluate error #
         evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
         err = ci.pivotError[len(ci.pivotError)-1] # error
-        print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
+        if info_qtci:
+            print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
         if tol is not None: # if enforce an error, check for convergence
             if err<tol: break # if convergence, break
             else: # no convergence

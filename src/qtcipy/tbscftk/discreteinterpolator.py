@@ -34,18 +34,21 @@ class Discrete_Interpolator():
 
 
 
-def interpolate_norb(f,dim=1,norb=1,**kwargs):
+def interpolate_norb(f,dim=1,norb=1,info_qtci=False,**kwargs):
     """Obtain an interpolator, where the function f has a certain
     number of orbitals"""
     IPs = [] # empty list
     ev = [] # evaluated points
-    print("#################################")
-    print("### Multiorbital interpolator ###")
-    print("#################################")
+    if info_qtci:
+        print("#################################")
+        print("### Multiorbital interpolator ###")
+        print("#################################")
     def get_IP(iorb): # return the interpolator
         if dim==1: # one dimensional
             def fi(ii): return f(ii*norb + iorb) # redefine function
-            IP = Interpolator_single(fi,dim=dim,**kwargs) # new interpolator
+            IP = Interpolator_single(fi,dim=dim,
+                    info_qtci = info_qtci,
+                    **kwargs) # new interpolator
         else: raise # not implemented
         IP = Discrete_Interpolator(IP) # redefine
         return IP
