@@ -45,7 +45,7 @@ class Interpolator():
     def get_eval_frac(self):
         return (len(self.get_evaluated()[0]))/(2**self.nb)
 
-
+# this is not used so far
 
 class CI():
     """Class for an enriched CI object"""
@@ -139,7 +139,8 @@ def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
 #            print("Almost all points evaluated, stopping")
             break
     ci = xfacpy.to_tci2(ci) # to type two
-    return ci # return
+    qtci_args = {}
+    return ci,qtci_args # return
 
 
 

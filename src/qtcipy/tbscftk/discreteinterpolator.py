@@ -22,7 +22,7 @@ class Discrete_Interpolator():
         self.x_ev = x.copy()
         self.y_ev = y.copy()
         self.error = IP.error
-        self.opt_qtci_maxm = IP.opt_qtci_maxm
+        self.qtci_args = IP.qtci_args
         self.out = [IP(i) for i in range(2**self.nb)]
     def __call__(self,i):
         return self.out[i]
@@ -39,10 +39,10 @@ def interpolate_norb(f,dim=1,norb=1,info_qtci=False,**kwargs):
     number of orbitals"""
     IPs = [] # empty list
     ev = [] # evaluated points
-    if info_qtci:
-        print("#################################")
-        print("### Multiorbital interpolator ###")
-        print("#################################")
+#    if info_qtci:
+#        print("#################################")
+#        print("### Multiorbital interpolator ###")
+#        print("#################################")
     def get_IP(iorb): # return the interpolator
         if dim==1: # one dimensional
             def fi(ii): return f(ii*norb + iorb) # redefine function

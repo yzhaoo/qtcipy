@@ -2,8 +2,8 @@ import numpy as np
 
 from .tbscftk import discreteinterpolator
 
-#methods = ["maxm","accumulative"]
-methods = ["maxm"]
+methods = ["maxm","accumulative"]
+#methods = ["maxm"]
 
 
 #### Acummulative mode has segfault randomly ####
@@ -21,9 +21,9 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
             outs.append([frac0,kw]) # store original ones
 #        except: pass # next one
     for method in methods_f:
-        try:
-            out = method(v,**kwargs) # compute this one
-        except: out = None # if something wrong happened
+#        try:
+        out = method(v,**kwargs) # compute this one
+#        except: out = None # if something wrong happened
         if out is not None: # sucess
             outs.append(out) # store
     if len(outs)>0: # if any succeded
@@ -144,7 +144,7 @@ def optimal_maxm(v,qtci_error=1e-2):
                     pivot = pi # store this pivot
                     err = erri # store this error
                     frac = fraci # store this fraction
-                    args = IP.args
+                    args = IP.qtci_args
 #                    print("Found new, maxm, norb, frac",maxm,norb,frac)
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
         if maxmi>100: break # cutoff
@@ -196,7 +196,7 @@ def optimal_accumulative(v,qtci_error=1e-2):
                     pivot = pi # store this pivot
                     err = erri # store this error
                     frac = fraci # store this fraction
-                    args = IP.args # store
+                    args = IP.qtci_args # store
 #                    print("Found new, maxm, norb, frac",maxm,norb,frac)
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
         if maxmi>100: break # cutoff

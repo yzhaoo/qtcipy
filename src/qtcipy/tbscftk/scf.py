@@ -13,6 +13,7 @@ class SCF_Hubbard():
             ddn0 = -dup0.copy() # initialize
             MF = [dup0,ddn0] # store
         self.MF = MF # store the mean-field guess
+        self.qtci_kwargs = {} # options for QTCI
         set_Hubbard(self,U) # set the Hubbard
 #        self.U = U # Hubbard interaction 
         self.Mz = MF[0]*0. # magnetization
@@ -25,23 +26,8 @@ class SCF_Hubbard():
         self.log = log # store the log
     def solve(self,qtci_maxm=None,**kwargs):
         """Perform the SCF loop"""
-        if qtci_maxm is not None: # overwrite if needed (old used otherwise)
-            self.log["opt_qtci_maxm"] = qtci_maxm
         from .hubbard import SCF_Hubbard
-        h0 = self.H0.H
-        U = self.U # Hubbard
-        dup0 = self.MF[0].copy() # first mean-field
-        ddn0 = self.MF[1].copy() # second mean-field
-        hup1,hdn1,dup1,ddn1 = SCF_Hubbard(h0,ddn=ddn0,dup=dup0,U=U,
-                AB=self.H0.AB,
-                dim=self.H0.dim, # dimensionality
-                log=self.log,**kwargs)
-        self.H[0] = hup1.copy() # replace matrix
-        self.H[1] = hdn1.copy() # replace matrix
-        self.H = [hup1,hdn1] # store the resulting Hamiltonian
-        self.MF = [dup1,ddn1] # store the densities
-        self.Mz = dup1 - ddn1 # magnetization
-        return self # return updated Hamiltonian
+        return SCF_Hubbard(self,**kwargs)
     def estimate_time(self,**kwargs):
         from .timeestimator import testimate
         return testimate(self.H0.H,dim=self.H0.dim,**kwargs)

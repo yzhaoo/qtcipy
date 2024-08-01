@@ -97,7 +97,7 @@ def get_mz(h,use_kpm=False,**kwargs):
 
 
 
-def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
+def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
                 log=None, # dictionary for logs
                 use_dynamical_qtci = True, # update the QTCI on the fly
                 chiral_AF = False, # flag to enforce chiral AF
@@ -111,6 +111,14 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
        - maxerror is the maximum error of the selfconsistent loop
        - mix mixes the mean field, for stability
        """
+    ### extract the required objects
+    h0 =  scf.H0.H
+    U =   scf.U # Hubbard
+    dup = scf.MF[0].copy() # first mean-field
+    ddn = scf.MF[1].copy() # second mean-field
+    log = scf.log # the log
+    kwargs["AB"]  = scf.H0.AB # the sublattice
+    kwargs["dim"]  = scf.H0.dim # the dimensionality
     # initialize a local log
     if log is not None:
         log0 = dict()
@@ -150,7 +158,10 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         mz = dup - ddn # magnetization
         if use_dynamical_qtci: # update the QTCI options
             from .dynamicalqtci import overwrite_qtci_kwargs
-            overwrite_qtci_kwargs(kwargs,mz,scf_error=error)
+            from .dynamicalqtci import get_qtci_kwargs
+            qtci_kwargs = get_qtci_kwargs(kwargs,mz,scf_error=error) # get the new one
+            overwrite_qtci_kwargs(kwargs,qtci_kwargs) # overwrite
+            scf.qtci_kwargs = qtci_kwargs # overwrite the options
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
     if log is not None: # up down logs
@@ -166,7 +177,12 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
     hdn = hdn.astype(np.float32)
     dup = dup.astype(np.float32)
     ddn = ddn.astype(np.float32)
-    return hup,hdn,dup,ddn # return Hamiltonian and densities
-
+    # update the SCF object
+    scf.H[0] = hup.copy() # replace matrix
+    scf.H[1] = hdn.copy() # replace matrix
+    scf.H = [hup,hdn] # store the resulting Hamiltonian
+    scf.MF = [dup,ddn] # store the densities
+    scf.Mz = dup - ddn # magnetization
+    return scf
 
 
