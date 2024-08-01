@@ -14,15 +14,14 @@ class Interpolator():
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
         self.f = memoize(f)
-        ci,args,opt_qtci_maxm = get_ci(self.f,nb=nb,qgrid=qgrid, **kwargs)
+        ci,qtci_args = get_ci(self.f,nb=nb,qgrid=qgrid, **kwargs)
+        self.qtci_args = qtci_args
         self.ci = ci
         self.nb = nb
         self.xlim = xlim
         self.qgrid = qgrid
-        self.qtci_maxm = args.bondDim # store the bond dimension
         self.errors = ci.pivotError
         self.error = err = ci.pivotError[len(ci.pivotError)-1]
-        self.opt_qtci_maxm = opt_qtci_maxm
         self.R = nb
         rse,zse = self.get_evaluated()
         self.frac = len(rse)/(2**nb)
@@ -83,21 +82,21 @@ def get_ci(f, qgrid=None, nb=1,
         info_qtci = False,
         qtci_tol = 1e-3, # tolerance of quantics
         qtci_accumulative = False,
+        qtci_pivots = None,
         qtci_fullPiv = False,
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
     maxm = qtci_maxm # initialize
     pivots = [] # list of pivots
     if tol is not None:  qtci_tol = tol
-    while True: # infinite loop until convergence is reached
-        args = xfacpy.TensorCI2Param()  # fix the max bond dimension
-        args.bondDim = maxm
-        if qtci_pivot1 is None: args.pivot1 = qgrid.coord_to_id([0.]) # in the first point
-        else: args.pivot1 = qgrid.coord_to_id([qtci_pivot1]) # in the first point
-        args.fullPiv = qtci_fullPiv # search the full Pi matrix
-        ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
-        if qtci_accumulative: # accumulative mode
-            ci = accumulative_train(ci,qtci_tol=qtci_tol,nb=nb,f=f)
+    args = xfacpy.TensorCI2Param()  # fix the max bond dimension
+    args.bondDim = maxm
+    if qtci_pivot1 is None: args.pivot1 = qgrid.coord_to_id([0.]) # in the first point
+    else: args.pivot1 = qgrid.coord_to_id([qtci_pivot1]) # in the first point
+    args.fullPiv = qtci_fullPiv # search the full Pi matrix
+    ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
+    if qtci_accumulative: # accumulative mode
+        ci,qtci_args = accumulative_train(ci,qtci_tol=qtci_tol,nb=nb,f=f)
         ### reuse the previous pivots
 #        x_used,y_used = get_cache_info(f) # return the evaluated points
 #        x_used = [qgrid.coord_to_id([x]) for x in x_used] # transform to quantics
@@ -112,33 +111,9 @@ def get_ci(f, qgrid=None, nb=1,
 #            ci.addPivotPoints(x_used) # add the global pivots
 #            ci.addPivotValues(y_used) # add the global pivots
         # train quantics #
-        else: # conventional mode
-            while not ci.isDone(): # iterate until convergence
-                ci.iterate()
-                err = ci.pivotError[len(ci.pivotError)-1]
-                if tol is not None: # if tol given, break when tol reached
-                    if err<tol: # tolerance reached
-                        if info_qtci:
-                            print("QTCI pivot tol reached",err," stopping training")
-                        break # stop loop
-        # evaluate error #
-        evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
-        err = ci.pivotError[len(ci.pivotError)-1] # error
-        if info_qtci:
-            print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
-        if tol is not None: # if enforce an error, check for convergence
-            if err<tol: break # if convergence, break
-            else: # no convergence
-                if not qtci_recursive: break # no recursive, just stop
-                else: # recursive mode
-                    maxm = maxm + 1 # for next iteration
-                    print("Recursive QTCI, next bond dim",maxm)
-        else: break # no error enforced, just stop
-        ### for the next iteration ###
-#        ci.getPivotsAt(0)
-#        pivots = [ci.getPivotsAt(ii) for ii in range(nb-2)] # get all the pivots used before
-#        print(pivots) ; exit()
-    return ci,args,maxm # return the optimal bond dimension, for next iteration
+    else: # conventional mode
+        ci,qtci_args = rook_train(ci,qtci_tol=qtci_tol,nb=nb,f=f)
+    return ci,qtci_args # return the optimal bond dimension, for next iteration
 
 
 
@@ -165,6 +140,35 @@ def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
             break
     ci = xfacpy.to_tci2(ci) # to type two
     return ci # return
+
+
+
+
+
+def rook_train(ci,qtci_tol=1e-3,qgrid=None,
+        info_qtci=False,
+        nb=1,f=None):
+    """Rook restart mode"""
+    while not ci.isDone(): # iterate until convergence
+        ci.iterate()
+        err = ci.pivotError[len(ci.pivotError)-1]
+        if qtci_tol is not None: # if tol given, break when tol reached
+            if err<qtci_tol: # tolerance reached
+                if info_qtci:
+                    print("QTCI pivot tol reached",err," stopping training")
+                break # stop loop
+    # evaluate error #
+    evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
+    err = ci.pivotError[len(ci.pivotError)-1] # error
+    if info_qtci:
+        print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
+    args = dict() # dictionary with the arguments
+    args["qtci_pivots"] = [ci.getPivotsAt(ii) for ii in range(nb-1)]
+    return ci,args
+
+
+
+
 
 
 

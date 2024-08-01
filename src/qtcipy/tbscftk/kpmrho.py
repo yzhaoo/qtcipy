@@ -49,7 +49,7 @@ def update_log(log,h,IP,info_qtci=False,**kwargs):
     if log is not None: # make a log
         rse,zse = IP.get_evaluated()
         log["QTCI_eval"].append(IP.frac) # ratio of evaluations
-        log["opt_qtci_maxm"] = IP.opt_qtci_maxm # store
+        log["qtci_args"] = IP.qtci_args # store
         log["QTCI_error"].append(IP.error) # store
     if info_qtci:
          print(IP.frac,"ratio of evaluations")

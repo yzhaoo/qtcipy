@@ -34,7 +34,8 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
 
 def get_qtci_flags(kwargs):
     """Retain only the QTCI flags"""
-    flags = ["qtci_maxm","qtci_accumulative","qtci_pivot1","norb","qtci_tol"]
+    flags = ["qtci_maxm","qtci_accumulative","qtci_pivot1",
+            "norb","qtci_tol","qtci_pivots","qtci_args"]
     out = dict()
     for key in kwargs: # loop
         if key in flags:
@@ -121,34 +122,37 @@ def optimal_maxm(v,qtci_error=1e-2):
     norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
     while True: # infinite loop over bond dimensions, until it works
-        for norbi in norbs: # loop over norbs
-            nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
-            for it in range(ntries): # these many tries, pick the best
-                vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
-                f = lambda i: vi[int(i)] # function to interpolate
-                wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
-                pi = pick_index(wi) # get this one 
-                IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
-                                               qtci_pivot1 = pi, # initial pivot
-                                               nb=nb,backend="C++",
-                                               qtci_accumulative = False, # non acc mode
-                                               qtci_maxm=maxmi) # maxm
-                erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
-                fraci = IP.frac # fraction of the space
-                if erri<qtci_error: # desired error level has been reached
-                    if fraci<frac: # better fraction of space than the stored one
-                        maxm = maxmi # store
-                        norb = norbi # store
-                        pivot = pi # store this pivot
-                        err = erri # store this error
-                        frac = fraci # store this fraction
-#                        print("Found new, maxm, norb, frac",maxm,norb,frac)
+        norbi = norbs[np.random.randint(len(norbs))] # one choice at random
+#        for norbi in norbs: # loop over norbs
+        nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
+        for it in range(ntries): # these many tries, pick the best
+            vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
+            f = lambda i: vi[int(i)] # function to interpolate
+            wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
+            pi = pick_index(wi) # get this one 
+            IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
+                                           qtci_pivot1 = pi, # initial pivot
+                                           nb=nb,backend="C++",
+                                           qtci_accumulative = False, # non acc mode
+                                           qtci_maxm=maxmi) # maxm
+            erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+            fraci = IP.frac # fraction of the space
+            if erri<qtci_error: # desired error level has been reached
+                if fraci<frac: # better fraction of space than the stored one
+                    maxm = maxmi # store
+                    norb = norbi # store
+                    pivot = pi # store this pivot
+                    err = erri # store this error
+                    frac = fraci # store this fraction
+                    args = IP.args
+#                    print("Found new, maxm, norb, frac",maxm,norb,frac)
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
         if maxmi>100: break # cutoff
     if pivot is None: return None # this did not work
     kwargs = dict() # dictionary with the options
     kwargs["qtci_maxm"] = maxm # store
     kwargs["qtci_accumulative"] = False # store
+    kwargs["qtci_args"] = args # store
     kwargs["qtci_pivot1"] = pivot # store
     kwargs["norb"] = norb # store
 #    print("Found optimal with fraction",frac,"error",err)
@@ -169,29 +173,31 @@ def optimal_accumulative(v,qtci_error=1e-2):
     norbs = [1,2,4,8]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
     while True: # infinite loop over bond dimensions, until it works
-        for norbi in norbs: # loop over norbs
-            vi = v + qtci_error/10*(np.random.random(len(v)) - 0.5) # slightly random
-            f = lambda i: vi[int(i)] # function to interpolate
-            nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
-            for it in range(ntries): # these many tries, pick the best
-                wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
-                pi = pick_index(wi) # get this one 
-                IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
-                                               qtci_pivot1 = pi, # initial pivot
-                                               nb=nb,backend="C++",
-                                               qtci_tol = qtci_error, # tolerance
-                                               qtci_accumulative = True, # non acc mode
-                                               qtci_maxm=maxmi) # maxm
-                erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
-                fraci = IP.frac # fraction of the space
-                if erri<qtci_error: # desired error level has been reached
-                    if fraci<frac: # better fraction of space than the stored one
-                        maxm = maxmi # store
-                        norb = norbi # store
-                        pivot = pi # store this pivot
-                        err = erri # store this error
-                        frac = fraci # store this fraction
-#                        print("Found new, maxm, norb, frac",maxm,norb,frac)
+        norbi = norbs[np.random.randint(len(norbs))] # one choice at random
+#        for norbi in norbs: # loop over norbs
+        vi = v + qtci_error/10*(np.random.random(len(v)) - 0.5) # slightly random
+        f = lambda i: vi[int(i)] # function to interpolate
+        nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
+        for it in range(ntries): # these many tries, pick the best
+            wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
+            pi = pick_index(wi) # get this one 
+            IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
+                                           qtci_pivot1 = pi, # initial pivot
+                                           nb=nb,backend="C++",
+                                           qtci_tol = qtci_error, # tolerance
+                                           qtci_accumulative = True, # non acc mode
+                                           qtci_maxm=maxmi) # maxm
+            erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+            fraci = IP.frac # fraction of the space
+            if erri<qtci_error: # desired error level has been reached
+                if fraci<frac: # better fraction of space than the stored one
+                    maxm = maxmi # store
+                    norb = norbi # store
+                    pivot = pi # store this pivot
+                    err = erri # store this error
+                    frac = fraci # store this fraction
+                    args = IP.args # store
+#                    print("Found new, maxm, norb, frac",maxm,norb,frac)
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
         if maxmi>100: break # cutoff
     if pivot is None: return None # this did not work
@@ -199,6 +205,7 @@ def optimal_accumulative(v,qtci_error=1e-2):
     kwargs["qtci_maxm"] = maxm # store
     kwargs["qtci_accumulative"] = True # store
     kwargs["qtci_pivot1"] = pivot # store
+    kwargs["qtci_args"] = args # store
     kwargs["qtci_tol"] = qtci_error # store
     kwargs["norb"] = norb # store
 #    print("Found optimal with fraction",frac,"error",err)
@@ -263,6 +270,7 @@ def optimal_maxm_random(v,qtci_error=1e-2):
                 pivot = pi # store this pivot
                 err = erri # store this error
                 frac = fraci # store this fraction
+                args = IP.args # store all arguments
                 print("Found new, maxm, norb, frac",maxm,norb,frac)
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
         itries += 1
@@ -272,6 +280,7 @@ def optimal_maxm_random(v,qtci_error=1e-2):
     kwargs["qtci_maxm"] = maxm # store
     kwargs["qtci_accumulative"] = False # store
     kwargs["qtci_pivot1"] = pivot # store
+    kwargs["qtci_args"] = args # store
     kwargs["norb"] = norb # store
     print("Found optimal with fraction",frac,"error",err)
     return kwargs # return optimal parameters

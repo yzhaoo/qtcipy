@@ -63,7 +63,7 @@ class Interpolator_norb():
         # do nothing
         self.nb = IPs[0].nb # number of bits
         self.frac = np.mean([IP.frac for IP in IPs])
-        self.opt_qtci_maxm = int(np.mean([IP.opt_qtci_maxm for IP in IPs]))
+        self.qtci_args = [IP.qtci_args for IP in IPs] # store the list
         self.error = np.mean([IP.error for IP in IPs])
         self.norb = len(IPs) # number of orbitals
         self.out = np.zeros(self.norb*(2**self.nb)) # initialize
