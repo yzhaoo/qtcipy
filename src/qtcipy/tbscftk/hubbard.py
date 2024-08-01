@@ -152,9 +152,6 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
             print("SCF Error",error,"iteration",ite)
             print("Average magnetization",np.mean(np.abs(ddn-dup)))
             print("Max magnetization",np.max(np.abs(ddn-dup)))
-        if error<maxerror: break # stop loop
-        if maxite is not None:
-            if ite>=maxite: break
         mz = dup - ddn # magnetization
         if use_dynamical_qtci: # update the QTCI options
             from .dynamicalqtci import overwrite_qtci_kwargs
@@ -164,6 +161,10 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
             scf.qtci_kwargs = qtci_kwargs # overwrite the options
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
+        # stopping criteria
+        if error<maxerror: break # stop loop
+        if maxite is not None:
+            if ite>=maxite: break
     if log is not None: # up down logs
         ev = log0["QTCI_eval"] 
         qterr = log0["QTCI_error"] 

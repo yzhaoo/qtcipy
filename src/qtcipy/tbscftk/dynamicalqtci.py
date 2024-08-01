@@ -16,10 +16,10 @@ def get_qtci_kwargs(kwargs,v,scf_error=None):
 #    frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol)
     frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs)
     if qtci_kwargs is None: # none succeded
-   #     print("No fitting QTCI found")
+        print("No fitting QTCI found")
         return {} # return the original ones
     else: 
-   #     print("New QTCI found with fraction",frac)
+        print("New QTCI found with fraction",frac)
         return qtci_kwargs
 
 def overwrite_qtci_kwargs(kwargs,qtci_kwargs):

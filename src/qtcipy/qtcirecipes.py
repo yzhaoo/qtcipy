@@ -17,8 +17,8 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
     if kwargs0 is not None: # if initial guess was given
 #        try: # try the original parameters
             frac0 = get_frac(v,**kwargs0)
-            kw = get_qtci_flags(kwargs0) # get the flags
-            outs.append([frac0,kw]) # store original ones
+            kw0 = get_qtci_flags(kwargs0) # get the flags
+            outs.append([frac0,kw0])
 #        except: pass # next one
     for method in methods_f:
 #        try:
@@ -27,7 +27,8 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
         if out is not None: # sucess
             outs.append(out) # store
     if len(outs)>0: # if any succeded
-        return sorted(outs,key=lambda x: x[0])[0] # return the best flags
+        frac,kw = sorted(outs,key=lambda x: x[0])[0] # get the best flags
+        return frac,kw
     else: return None,None # none succeded
 
 
@@ -45,11 +46,12 @@ def get_qtci_flags(kwargs):
 
 
 
-def get_frac(v,**kwargs):
+def get_frac(v,qtci_tol=1e-2,**kwargs):
     """Get the fraction with a certain set of parameters"""
     nb = get_nbits(v,**kwargs)
     lim = get_lim(v,**kwargs)
-    f = lambda i: v[int(i)] # function
+    vi = v + qtci_tol/100*(np.random.random()-0.5) # add noise
+    f = lambda i: vi[int(i)] # function
     IP = get_interpolator(f,nb,lim,**kwargs) 
     return IP.frac # return the fraction
 

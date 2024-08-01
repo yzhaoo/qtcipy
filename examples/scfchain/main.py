@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 12 # exponential length
+L = 8 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -24,6 +24,7 @@ SCF = H.get_SCF_Hubbard(U=3.0) # generate a selfconsistent object
 SCF.solve(info=True,
         use_qtci=True,use_kpm = True,
         info_qtci = True,
+#        maxite = 1,
         qtci_maxm = 20, # bond dimension to use as initial guess
 #        maxite = 1,
         backend = "C++",
@@ -34,6 +35,8 @@ SCF.solve(info=True,
 #        qtci_tol = 1e-2, # error in quantics
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF
+
+#print(SCF.qtci_kwargs)
 #SCF.save()
 #SCF = SCF.load()
 #print("Loading from file")
