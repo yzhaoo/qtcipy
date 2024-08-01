@@ -68,10 +68,7 @@ def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
         return (f0(i)-0.5)*2. # magnetization
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
-    if log is not None: qtci_maxm = log["opt_qtci_maxm"] # get the maxm
-    else: qtci_maxm = 5 # reasonable guess
     IP = get_interpolator(h,f,nb,lim,
-            qtci_maxm=qtci_maxm,
             **kwargs) # keyword arguments
     update_log(log,h,IP,**kwargs) # update the log
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator

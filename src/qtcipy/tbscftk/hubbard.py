@@ -99,6 +99,7 @@ def get_mz(h,use_kpm=False,**kwargs):
 
 def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
                 log=None, # dictionary for logs
+                use_dynamical_qtci = True, # update the QTCI on the fly
                 chiral_AF = False, # flag to enforce chiral AF
                 mix=0.3,info=False,**kwargs):
     """
@@ -129,8 +130,8 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian
         if chiral_AF: # by symmetry for chiral AF systems
             mz = get_mz(hup,log=log0,**kwargs)
-            dup = 0.5 + mz/2.
-            ddn = 0.5 - mz/2.
+            dup = 0.5 + mz/2. # up density
+            ddn = 0.5 - mz/2. # down density
         else: # compute explicitly
             ddn = get_den(hdn,log=log0,**kwargs) # generate down density
             dup = get_den(hup,log=log0,**kwargs) # generate up density
@@ -146,6 +147,10 @@ def SCF_Hubbard(h0,U=0.,dup=None,ddn=None,maxerror=1e-3,maxite=None,
         if error<maxerror: break # stop loop
         if maxite is not None:
             if ite>=maxite: break
+        mz = dup - ddn # magnetization
+        if use_dynamical_qtci: # update the QTCI options
+            from .dynamicalqtci import overwrite_qtci_kwargs
+            overwrite_qtci_kwargs(kwargs,mz,scf_error=error)
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
     if log is not None: # up down logs

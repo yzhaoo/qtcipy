@@ -119,8 +119,8 @@ def get_ci(f, qgrid=None, nb=1,
                 if tol is not None: # if tol given, break when tol reached
                     if err<tol: # tolerance reached
                         if info_qtci:
-                            print("QTCI tol reached",err," stopping training")
-    #                    break # stop loop
+                            print("QTCI pivot tol reached",err," stopping training")
+                        break # stop loop
         # evaluate error #
         evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
         err = ci.pivotError[len(ci.pivotError)-1] # error
@@ -145,7 +145,7 @@ def get_ci(f, qgrid=None, nb=1,
 
 def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
         nb=1,f=None):
-    print("Accumulative mode")
+#    print("Accumulative mode")
     ci = xfacpy.to_tci1(ci) # to type one
     batch = 3 # three times
     while True: # infinite loop
@@ -155,13 +155,13 @@ def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
             toli = ci.pivotError[len(ci.pivotError)-1] # tolerance in evaluated points
             tols.append(toli) # store
         if np.mean(tols)<qtci_tol: 
-            print("Accumulative reached error, stopping",np.min(tols))
+#            print("Accumulative reached error, stopping",np.min(tols))
             break # stop loop
         # other stopping criteria
         npoints = 2**nb
         nev = len(get_cache_info(f)[0])
         if nev/npoints>0.95: 
-            print("Almost all points evaluated, stopping")
+#            print("Almost all points evaluated, stopping")
             break
     ci = xfacpy.to_tci2(ci) # to type two
     return ci # return

@@ -50,7 +50,7 @@ def matrix2array(H):
     mi = coo_matrix(H)
     row = mi.row
     col = mi.col
-    data = mi.data
+    data = mi.data.real
     out = np.zeros(mi.shape[0]) # output
     @jit(nopython=True)
     def f(data,row,col,out):

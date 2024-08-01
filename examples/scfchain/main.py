@@ -4,11 +4,12 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 10 # exponential length
+L = 6 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
-    return 1. + 0.2*np.cos(np.pi*2.*np.sqrt(2.)*r[0]) #+0.2*np.cos(np.pi*2.*np.sqrt(3.)*r[0])
+    omega = np.pi*2.*np.sqrt(2.)/20
+    return 1. + 0.2*np.cos(omega*r[0]) #+0.2*np.cos(np.pi*2.*np.sqrt(3.)*r[0])
 H.modify_hopping(f)
 
 # get the SCF object
@@ -27,10 +28,10 @@ SCF.solve(info=True,
 #        maxite = 1,
         backend = "C++",
 #        qtci_recursive = True, # use a recursive mode, to enforce tol
-        qtci_pivot1 = 3,
+#        qtci_pivot1 = 3,
 #        qtci_fullPiv = False,
-        qtci_accumulative = True,
-        qtci_tol = 1e-2, # error in quantics
+#        qtci_accumulative = True,
+#        qtci_tol = 1e-2, # error in quantics
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF
 #SCF.save()
