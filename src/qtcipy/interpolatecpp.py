@@ -78,7 +78,7 @@ import numpy as np
 def get_ci(f, qgrid=None, nb=1,
         qtci_recursive = False,
         qtci_pivot1 = None, # no initial guess
-        qtci_maxm=20, # initial bond dimension
+        qtci_maxm=100, # initial bond dimension
         info_qtci = False,
         qtci_tol = 1e-3, # tolerance of quantics
         qtci_accumulative = False,
