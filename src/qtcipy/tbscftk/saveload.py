@@ -27,6 +27,7 @@ def SCF2dict(SCF):
     objs["log"] = SCF.log
     objs["Mz"] = SCF.Mz
     objs["MF"] = SCF.MF
+    objs["qtci_kwargs"] = SCF.qtci_kwargs
     return objs
 
 
@@ -41,6 +42,7 @@ def dict2SCF(objs):
     SCF.log = objs["log"]
     SCF.Mz = objs["Mz"]
     SCF.MF = objs["MF"]
+    SCF.qtci_kwargs = objs["qtci_kwargs"]
     return SCF
 
 

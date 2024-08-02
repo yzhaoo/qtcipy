@@ -10,13 +10,35 @@ import xfacpy
 
 class Interpolator():
     def __init__(self,f,xlim=[0.,1.],nb=20,
+        qtci_maxm=100, # initial bond dimension
+        qtci_accumulative = False,
+        qtci_tol = 1e-2,
+        qtci_pivot1 = None,
+        qtci_fullPiv = True,
             **kwargs):
         """Initialize the interpolator object"""
         qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
         self.f = memoize(f)
-        ci,qtci_args = get_ci(self.f,nb=nb,qgrid=qgrid, **kwargs)
+        # initialize the pivot
+        if qtci_pivot1 is None: 
+            r = np.random.random()*xlim[1] + xlim[0] # random point
+            qtci_pivot1 = qgrid.coord_to_id([r]) # random place
+        # obtain the interpolator
+        ci,qtci_args = get_ci(self.f,nb=nb,qgrid=qgrid,
+                qtci_maxm = qtci_maxm,
+                qtci_accumulative = qtci_accumulative,
+                qtci_tol = qtci_tol,
+                qtci_pivot1 = qtci_pivot1,
+                qtci_fullPiv = qtci_fullPiv,
+                **kwargs)
+        # store the relevant parameters
         self.qtci_args = qtci_args
         self.ci = ci
+        self.qtci_maxm = qtci_maxm
+        self.qtci_accumulative = qtci_accumulative
+        self.qtci_fullPiv = qtci_fullPiv
+        self.qtci_tol = qtci_tol
+        self.qtci_pivot1 = qtci_pivot1
         self.nb = nb
         self.xlim = xlim
         self.qgrid = qgrid
@@ -78,49 +100,35 @@ import numpy as np
 def get_ci(f, qgrid=None, nb=1,
         qtci_recursive = False,
         qtci_pivot1 = None, # no initial guess
-        qtci_maxm=100, # initial bond dimension
-        info_qtci = False,
         qtci_tol = 1e-3, # tolerance of quantics
+        qtci_maxm=100, # initial bond dimension
         qtci_accumulative = False,
-        qtci_pivots = None,
-        qtci_fullPiv = False,
+        qtci_fullPiv = True,
         tol=None,**kwargs):
     """Compute the CI, using an iterative procedure if needed"""
-    maxm = qtci_maxm # initialize
-    pivots = [] # list of pivots
     if tol is not None:  qtci_tol = tol
     args = xfacpy.TensorCI2Param()  # fix the max bond dimension
-    args.bondDim = maxm
-    if qtci_pivot1 is None: args.pivot1 = qgrid.coord_to_id([0.]) # in the first point
-    else: args.pivot1 = qgrid.coord_to_id([qtci_pivot1]) # in the first point
+    args.bondDim = qtci_maxm
+    args.useCachedFunction = False # do not use C++ cache
+    args.useCachedFunction = qtci_fullPiv # full pivot method
     args.fullPiv = qtci_fullPiv # search the full Pi matrix
     ci = xfacpy.QTensorCI(f1d=f, qgrid=qgrid, args=args)  # construct a tci
+    # select the mode
     if qtci_accumulative: # accumulative mode
-        ci,qtci_args = accumulative_train(ci,qtci_tol=qtci_tol,nb=nb,f=f)
-        ### reuse the previous pivots
-#        x_used,y_used = get_cache_info(f) # return the evaluated points
-#        x_used = [qgrid.coord_to_id([x]) for x in x_used] # transform to quantics
-#        print(pivots)
-#        pivots = []
-#        if len(pivots)!=0: # pivots provided
-#            for ii in range(len(pivots)): # loop over bits
-#                ci.addPivotsAt(pivots[ii],ii) # add the previous pivots
-#        ci.addPivotsAllBonds(x_used) # add the global pivots
-#        print(x_used) ; exit()
-#        if len(x_used)>0:
-#            ci.addPivotPoints(x_used) # add the global pivots
-#            ci.addPivotValues(y_used) # add the global pivots
-        # train quantics #
+        ci,qtci_args = accumulative_train(ci,qtci_tol=qtci_tol,nb=nb,f=f,**kwargs)
     else: # conventional mode
-        ci,qtci_args = rook_train(ci,qtci_tol=qtci_tol,nb=nb,f=f)
+        ci,qtci_args = rook_train(ci,qtci_tol=qtci_tol,nb=nb,qgrid=qgrid,f=f,**kwargs)
     return ci,qtci_args # return the optimal bond dimension, for next iteration
 
 
 
 
 def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
-        nb=1,f=None):
-#    print("Accumulative mode")
+        info_qtci=False,
+        nb=1,f=None,**kwargs):
+    """Train a QTCI using the accumulative mode"""
+    if info_qtci:
+        print("Accumulative mode")
     ci = xfacpy.to_tci1(ci) # to type one
     batch = 3 # three times
     while True: # infinite loop
@@ -148,28 +156,49 @@ def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
 
 def rook_train(ci,qtci_tol=1e-3,qgrid=None,
         info_qtci=False,
-        nb=1,f=None):
+        qtci_args = {}, # empty distionary
+        nb=1,f=None,
+        **kwargs):
     """Rook restart mode"""
+    # set the pivot if available
+    if info_qtci:
+        print("Rook QTCI mode")
+    if "qtci_rook_pivots" in qtci_args: # pivots are given
+        print("#### Adding rook QTCI pivots")
+        qtci_pivots = qtci_args["qtci_rook_pivots"]
+        for i in range(len(qtci_pivots)): # loop
+            ci.addPivotsAt(qtci_pivots[i],i) # add pivots
+        ci.makeCanonical()
     while not ci.isDone(): # iterate until convergence
         ci.iterate()
         err = ci.pivotError[len(ci.pivotError)-1]
         if qtci_tol is not None: # if tol given, break when tol reached
-            if err<qtci_tol: # tolerance reached
-                if info_qtci:
-                    print("QTCI pivot tol reached",err," stopping training")
-                break # stop loop
+            if err<qtci_tol: # tolerance reached, check a few random points
+                err_est = estimate_error(ci,f,nb=nb,qgrid=qgrid)
+                if err_est<qtci_tol: # error semms ok, stopping
+                    if info_qtci:
+                        print("QTCI pivot tol reached",err," stopping training")
+                    break # stop loop
     # evaluate error #
     evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
     err = ci.pivotError[len(ci.pivotError)-1] # error
     if info_qtci:
-        print("Eval frac = ",evf,"maxm = ",maxm,"error = ",err,"target = ",tol)
+        print("Eval frac = ",evf,"error = ",err)
     args = dict() # dictionary with the arguments
-    args["qtci_pivots"] = [ci.getPivotsAt(ii) for ii in range(nb-1)]
+#    args["qtci_rook_pivots"] = [ci.getPivotsAt(ii) for ii in range(nb-1)]
     return ci,args
 
 
 
-
+def estimate_error(ci,f,nb=1,ntries=10,qgrid=None):
+    """Estimate the error between the function and the tensor train"""
+    out = 0.
+    for i in range(ntries): # a few random points
+        x = float(np.random.randint(0,2**nb)) # random point
+        yci = eval_ci(ci,qgrid,x) # evaluate
+        yreal = f(x)
+        out += np.abs(yci - yreal)
+    return out/ntries
 
 
 

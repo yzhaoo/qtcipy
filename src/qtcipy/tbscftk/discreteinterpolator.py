@@ -4,6 +4,7 @@ import numpy as np
 from ..interpolate import Interpolator as Interpolator_single
 
 def Interpolator(f,norb=1,**kwargs):
+    return interpolate_norb(f,norb=norb,**kwargs) # conventional case
     if norb==1: # one orbital
         return Interpolator_single(f,**kwargs) # conventional case
     else: # several orbitals
@@ -22,7 +23,12 @@ class Discrete_Interpolator():
         self.x_ev = x.copy()
         self.y_ev = y.copy()
         self.error = IP.error
+        self.qtci_maxm = IP.qtci_maxm # store
+        self.qtci_accumulative = IP.qtci_accumulative # store
+        self.qtci_fullPiv = IP.qtci_fullPiv # store 
         self.qtci_args = IP.qtci_args
+        self.qtci_pivot1 = IP.qtci_pivot1
+        self.qtci_tol = IP.qtci_tol
         self.out = [IP(i) for i in range(2**self.nb)]
     def __call__(self,i):
         return self.out[i]
@@ -39,10 +45,6 @@ def interpolate_norb(f,dim=1,norb=1,info_qtci=False,**kwargs):
     number of orbitals"""
     IPs = [] # empty list
     ev = [] # evaluated points
-#    if info_qtci:
-#        print("#################################")
-#        print("### Multiorbital interpolator ###")
-#        print("#################################")
     def get_IP(iorb): # return the interpolator
         if dim==1: # one dimensional
             def fi(ii): return f(ii*norb + iorb) # redefine function
@@ -63,7 +65,16 @@ class Interpolator_norb():
         # do nothing
         self.nb = IPs[0].nb # number of bits
         self.frac = np.mean([IP.frac for IP in IPs])
-        self.qtci_args = [IP.qtci_args for IP in IPs] # store the list
+        #self.qtci_args = [IP.qtci_args for IP in IPs] # store the list
+#        if len(IPs)==1: # single one
+        self.qtci_args = IPs[0].qtci_args # store the list
+        # common for all #
+        self.qtci_maxm = IPs[0].qtci_maxm # store the list
+        self.qtci_accumulative = IPs[0].qtci_accumulative # store the list
+        self.qtci_fullPiv = IPs[0].qtci_fullPiv # store the list
+        self.qtci_tol = IPs[0].qtci_tol # store the list
+        self.qtci_pivot1 = IPs[0].qtci_pivot1 # store the list
+        ##################
         self.error = np.mean([IP.error for IP in IPs])
         self.norb = len(IPs) # number of orbitals
         self.out = np.zeros(self.norb*(2**self.nb)) # initialize
@@ -84,6 +95,18 @@ class Interpolator_norb():
         return self.out[int(i)] # return result
     def get_evaluated(self):
         return self.x_ev,self.y_ev
+    def get_kwargs(self):
+        """Return a dictionary with the required kwargs"""
+        out = dict()
+        out["norb"] = self.norb # legacy
+        out["qtci_norb"] = self.norb
+        out["qtci_maxm"] = self.qtci_maxm
+        out["qtci_accumulative"] = self.qtci_accumulative
+        out["qtci_fullPiv"] = self.qtci_fullPiv
+        out["qtci_tol"] = self.qtci_tol
+        out["qtci_pivot1"] = self.qtci_pivot1
+        out["qtci_args"] = self.qtci_args
+        return out
 
 
 

@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 8 # exponential length
+L = 10 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -25,7 +25,7 @@ SCF.solve(info=True,
         use_qtci=True,use_kpm = True,
         info_qtci = True,
 #        maxite = 1,
-        qtci_maxm = 20, # bond dimension to use as initial guess
+        qtci_maxm = 2, # bond dimension to use as initial guess
 #        maxite = 1,
         backend = "C++",
 #        qtci_recursive = True, # use a recursive mode, to enforce tol
@@ -37,8 +37,11 @@ SCF.solve(info=True,
         ) # solve the SCF
 
 #print(SCF.qtci_kwargs)
-#SCF.save()
-#SCF = SCF.load()
+SCF.save()
+SCF = SCF.load()
+
+print(SCF.qtci_kwargs)
+
 #print("Loading from file")
 #SCF.solve(info=True,use_qtci=True,use_kpm=False) # solve the SCF
 

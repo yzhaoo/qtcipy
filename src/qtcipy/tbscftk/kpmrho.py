@@ -111,7 +111,7 @@ def get_interpolator(h,f,nb,lim,dim=1,backend="C++",
                 dim=1,backend=backend,**kwargs)
     elif dim==2: # two dimensional
         IP = interpolate.Interpolator(f,tol=qtci_tol,nb=nb,xlim=lim[0],
-                ylim=lim[1],dim=2)
+                ylim=lim[1],dim=2,**kwargs)
     else: raise # error otherwise
     return IP # return the interpolator
 

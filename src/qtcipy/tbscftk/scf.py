@@ -66,6 +66,12 @@ class SCF_Hubbard():
     def load(self,**kwargs):
         from .saveload import load_SCF
         return load_SCF(**kwargs)
+    def get_qtci_kwargs(self):
+        """Return a set of good parameters"""
+        from .dynamicalqtci import initial_qtci_kwargs
+        if len(self.qtci_kwargs)==0: # first iteration
+            return initial_qtci_kwargs(self)
+        else: return self.qtci_kwargs # return the stored ones
 
 
 
