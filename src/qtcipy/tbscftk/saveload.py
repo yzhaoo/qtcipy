@@ -42,7 +42,9 @@ def dict2SCF(objs):
     SCF.log = objs["log"]
     SCF.Mz = objs["Mz"]
     SCF.MF = objs["MF"]
-    SCF.qtci_kwargs = objs["qtci_kwargs"]
+    if "qtci_kwargs" in objs: # compatibility
+        SCF.qtci_kwargs = objs["qtci_kwargs"]
+    else: SCF.qtci_kwargs = {} # empty
     return SCF
 
 

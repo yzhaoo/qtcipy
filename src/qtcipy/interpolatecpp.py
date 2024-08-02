@@ -163,6 +163,14 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     # set the pivot if available
     if info_qtci:
         print("Rook QTCI mode")
+    if "qtci_use_global_pivots" in qtci_args: # check if global pivots should be used
+        if qtci_args["qtci_use_global_pivots"]: # if they are used
+            if info_qtci:
+                print("#### Adding global pivots")
+            glob_piv = qtci_args["qtci_global_pivots_real"] # pivots, in real coordinates
+            gp = [qgrid.coord_to_id([x]) for x in glob_piv] # to quantics coordinates
+            ci.addPivotsAllBonds(gp) # global pivots
+            ci.makeCanonical()
     if "qtci_rook_pivots" in qtci_args: # pivots are given
         print("#### Adding rook QTCI pivots")
         qtci_pivots = qtci_args["qtci_rook_pivots"]
@@ -184,9 +192,9 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     err = ci.pivotError[len(ci.pivotError)-1] # error
     if info_qtci:
         print("Eval frac = ",evf,"error = ",err)
-    args = dict() # dictionary with the arguments
+#    args = dict() # dictionary with the arguments
 #    args["qtci_rook_pivots"] = [ci.getPivotsAt(ii) for ii in range(nb-1)]
-    return ci,args
+    return ci,qtci_args
 
 
 

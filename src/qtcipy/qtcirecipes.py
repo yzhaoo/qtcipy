@@ -34,9 +34,9 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
             if out[0]<fracmin:
                 fracmin = out[0]
                 kwmin = out[1]
+#        print(kwmin)
         return fracmin,kwmin
     else: 
-        raise
         return None,None # none succeded
 
 
@@ -140,6 +140,10 @@ def optimal_maxm(v,qtci_error=1e-2):
         nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
         fullPivi = np.random.random()<0.5 # True or False randomly
         for it in range(ntries): # these many tries, pick the best
+            #### generate global pivots ####
+            use_gp = np.random.random()<0.5 # True or False randomly
+            qtci_args = random_global_pivots(weights) # get global pivots
+            ################################
             vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
             f = lambda i: vi[int(i)] # function to interpolate
             wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
@@ -147,6 +151,7 @@ def optimal_maxm(v,qtci_error=1e-2):
             IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
                                            nb=nb,backend="C++",
                                            qtci_tol = qtci_error,
+                                           qtci_args = qtci_args,
                                            qtci_accumulative = False, # non acc mode
                                            qtci_fullPiv = fullPivi, # pivotting mode
                                            qtci_maxm=maxmi) # maxm
@@ -178,6 +183,19 @@ def optimal_maxm(v,qtci_error=1e-2):
 
 
 
+def random_global_pivots(v):
+    """Generte random global pivots"""
+    use_gp = np.random.random()<0.5 # True or False randomly
+    qtci_args = {"qtci_use_global_pivots":use_gp} # store
+    ntries = 5
+    if use_gp: # use pivots
+        n = len(v) # number of elements
+        out = []
+        for i in range(ntries): # one every 100
+            out.append(pick_index(v)) # store
+        out = np.unique(out) # get unique ones
+        qtci_args["qtci_global_pivots_real"] = out
+    return qtci_args # return
 
 
 
