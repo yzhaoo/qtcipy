@@ -38,6 +38,11 @@ class SCF_Hubbard():
         (es,dup) = get_dos_i(self.H[0].H,x=w,**kwargs)
         (es,ddn) = get_dos_i(self.H[1].H,x=w,**kwargs)
         return es,dup+ddn # return energy and DOS
+    def get_dos(self,**kwargs):
+        from .ldos import get_dos
+        (es,dup) = get_dos(self.H[0],**kwargs)
+        (es,ddn) = get_dos(self.H[1],**kwargs)
+        return es,dup+ddn # return energy and DOS
     def get_ldos(self,**kwargs):
         from .ldos import get_ldos
         oup = get_ldos(self.H[0],**kwargs)

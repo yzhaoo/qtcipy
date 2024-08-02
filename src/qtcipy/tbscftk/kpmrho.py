@@ -192,10 +192,10 @@ def get_dos_i(m,i=0,
         npol_scale=4, # rescale number of polynomials
         **kwargs):
     """Return electronic density at site i"""
-    ne = int(100/delta) # number of energies
     scale = kpm_scale # scale of KPM method
     from pyqula import kpm
     npol = int(npol_scale*scale/delta) # number of polynomials
+    ne = npol*10
     (es,ds) = kpm.ldos(m,i=i,ne=ne,kernel=kernel,kpm_prec=kpm_prec,
             npol=npol,**kwargs) # compute the LDOS with KPM
     return es,ds.real
