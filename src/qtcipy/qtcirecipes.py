@@ -132,7 +132,8 @@ def optimal_maxm(v,qtci_error=1e-2):
     ntries = 1 # average over these many tries
     maxmi = 3 # start with 3
     err,frac,pivot,maxm = 1e7,1.0,None,None # initialize
-    norbs = [1,2,4]
+    if len(v)<10: norbs = [1]
+    else: norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
     while True: # infinite loop over bond dimensions, until it works
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
@@ -205,7 +206,8 @@ def optimal_accumulative(v,qtci_error=1e-2):
     ntries = 1 # average over these many tries
     maxmi = 3 # start with 10
     err,frac,pivot,maxm = 1e7,1.0,None,None # initialize
-    norbs = [1,2,4,8]
+    if len(v)<10: norbs = [1]
+    else: norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
     while True: # infinite loop over bond dimensions, until it works
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
