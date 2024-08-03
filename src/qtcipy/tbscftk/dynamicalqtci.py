@@ -60,7 +60,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
         kw["backend"] = "C++"
         kw["maxite"] = 1 # one iteration
         SCF0.solve(**kw) # one iteration without accuracy
-        print("DONE")
+        print("SCF Initialization DONE")
         return SCF0.qtci_kwargs
     else: return SCF.qtci_kwargs # return this choice
 

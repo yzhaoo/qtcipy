@@ -34,8 +34,11 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
                 fracmin = out[0]
                 kwmin = out[1]
         return fracmin,kwmin
-    else: 
-        return None,None # none succeded
+    else: # not a good one has been found
+        if kwargs0 is not None: # if there was a guess, return that one
+            return 1.0,kwargs0 # return the previous one
+        else: # nothing good
+            return None,None # none succeded
 
 
 

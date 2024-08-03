@@ -133,7 +133,7 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
     import time
     t0 = time.time() # get the time
     while True: # infinite loop
-        print("Starting SCF",chiral_AF)
+        if info: print("Starting SCF loop")
         ite += 1 # iteration
         hup = h0 + diags(U*(ddn_old-0.5),shape=h0.shape) # up Hamiltonian
         hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian
