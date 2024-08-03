@@ -155,6 +155,8 @@ def get_nbits(h,norb=1,dim=1,**kwargs):
 def get_function(h,dim=1,**kwargs):
     """Return the function to interpolate"""
     ### norb only implemented for 2d ###
+    kpm_scale = estimate_bandwidth(h) # compute the scale just once
+    kwargs["kpm_scale"] = kpm_scale # overwrite
     def f1d(i): # function to interpolate
         ii = int(np.round(i)) # round the value
         if not 0<=ii<h.shape[0]: # fix and say
@@ -184,18 +186,23 @@ def get_function(h,dim=1,**kwargs):
 import os ; import sys
 sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
+from pyqula.kpmtk.bandwidth import estimate_bandwidth
+from pyqula import kpm
+
+
 def get_dos_i(m,i=0,
         delta=1e-1, # effective smearing
         kpm_prec="single",
-        kpm_scale = 10.0, # scale of KPm method
+        kpm_scale = None, # scale of KPm method
         kernel="jackson", # kernel 
         npol_scale=4, # rescale number of polynomials
         **kwargs):
     """Return electronic density at site i"""
-    scale = kpm_scale # scale of KPM method
-    from pyqula import kpm
+    if kpm_scale is None: # if none provided
+        scale = estimate_bandwidth(m) # estimate the bandwidth
+    else: scale = kpm_scale # given from input
     npol = int(npol_scale*scale/delta) # number of polynomials
-    ne = npol*10
+    ne = npol*10 # scale the number of energies accordingly
     (es,ds) = kpm.ldos(m,i=i,ne=ne,kernel=kernel,kpm_prec=kpm_prec,
             npol=npol,**kwargs) # compute the LDOS with KPM
     return es,ds.real

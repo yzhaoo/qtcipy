@@ -166,11 +166,12 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     if "qtci_use_global_pivots" in qtci_args: # check if global pivots should be used
         if qtci_args["qtci_use_global_pivots"]: # if they are used
             if info_qtci:
-                print("#### Adding global pivots")
-            glob_piv = qtci_args["qtci_global_pivots_real"] # pivots, in real coordinates
-            gp = [qgrid.coord_to_id([x]) for x in glob_piv] # to quantics coordinates
-            ci.addPivotsAllBonds(gp) # global pivots
-            ci.makeCanonical()
+                if "qtci_global_pivots" in qtci_args:
+                    print("#### Adding global pivots")
+                    gp = qtci_args["qtci_global_pivots"] # pivots, in real coordinates
+#            gp = [qgrid.coord_to_id([x]) for x in glob_piv] # to quantics coordinates
+                    ci.addPivotsAllBonds(gp[0]) # global pivots
+                    ci.makeCanonical()
     if "qtci_rook_pivots" in qtci_args: # pivots are given
         print("#### Adding rook QTCI pivots")
         qtci_pivots = qtci_args["qtci_rook_pivots"]
@@ -184,8 +185,8 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
             if err<qtci_tol: # tolerance reached, check a few random points
                 err_est = estimate_error(ci,f,nb=nb,qgrid=qgrid)
                 if err_est<qtci_tol: # error semms ok, stopping
-                    if info_qtci:
-                        print("QTCI pivot tol reached",err," stopping training")
+#                    if info_qtci:
+#                        print("QTCI pivot tol reached",err," stopping training")
                     break # stop loop
     # evaluate error #
     evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
@@ -193,7 +194,7 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     if info_qtci:
         print("Eval frac = ",evf,"error = ",err)
 #    args = dict() # dictionary with the arguments
-#    args["qtci_rook_pivots"] = [ci.getPivotsAt(ii) for ii in range(nb-1)]
+    qtci_args["qtci_global_pivots"] = [ci.getPivotsAt(ii) for ii in range(ci.len()-1)]
     return ci,qtci_args
 
 

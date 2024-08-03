@@ -77,6 +77,12 @@ class SCF_Hubbard():
         if len(self.qtci_kwargs)==0: # first iteration
             return initial_qtci_kwargs(self)
         else: return self.qtci_kwargs # return the stored ones
+    def get_bandwidth(self):
+        """Return the bandwidth of the associated mean-field Hamiltonian"""
+        from .kpmrho import estimate_bandwidth
+        bup = estimate_bandwidth(self.H[0]) # up
+        bdn = estimate_bandwidth(self.H[1]) # down
+        return np.max([bup,bdn]) # maximum
 
 
 
