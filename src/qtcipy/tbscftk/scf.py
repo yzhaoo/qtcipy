@@ -24,9 +24,11 @@ class SCF_Hubbard():
         log["SCF_time"] = [] # initialize
         log["opt_qtci_maxm"] = 100 # reasonable initial guess
         self.log = log # store the log
-    def solve(self,qtci_maxm=None,**kwargs):
+    def solve(self,**kwargs):
         """Perform the SCF loop"""
         from .hubbard import SCF_Hubbard
+        from .dynamicalqtci import initial_qtci_kwargs
+        self.qtci_kwargs = initial_qtci_kwargs(self,**kwargs)
         return SCF_Hubbard(self,**kwargs)
     def estimate_time(self,**kwargs):
         from .timeestimator import testimate

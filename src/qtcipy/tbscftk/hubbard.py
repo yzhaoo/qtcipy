@@ -132,9 +132,8 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
     ite = 0
     import time
     t0 = time.time() # get the time
-    from .dynamicalqtci import initial_qtci_kwargs
-    scf.qtci_kwargs = initial_qtci_kwargs(scf,**kwargs)
     while True: # infinite loop
+        print("Starting SCF",chiral_AF)
         ite += 1 # iteration
         hup = h0 + diags(U*(ddn_old-0.5),shape=h0.shape) # up Hamiltonian
         hdn = h0 + diags(U*(dup_old-0.5),shape=h0.shape) # down Hamiltonian

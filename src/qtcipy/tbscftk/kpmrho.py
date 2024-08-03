@@ -52,7 +52,7 @@ def update_log(log,h,IP,info_qtci=False,**kwargs):
         log["qtci_args"] = IP.qtci_args # store
         log["QTCI_error"].append(IP.error) # store
     if info_qtci:
-         print(IP.frac,"ratio of evaluations")
+         print(IP.frac,"ratio of QTCI evaluations in the SCF")
 
 
 
