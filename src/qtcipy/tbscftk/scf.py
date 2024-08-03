@@ -13,7 +13,7 @@ class SCF_Hubbard():
             ddn0 = -dup0.copy() # initialize
             MF = [dup0,ddn0] # store
         self.MF = MF # store the mean-field guess
-        self.qtci_kwargs = {} # options for QTCI
+        self.qtci_kwargs = None # options for QTCI
         set_Hubbard(self,U) # set the Hubbard
 #        self.U = U # Hubbard interaction 
         self.Mz = MF[0]*0. # magnetization
@@ -83,6 +83,9 @@ class SCF_Hubbard():
         bup = estimate_bandwidth(self.H[0]) # up
         bdn = estimate_bandwidth(self.H[1]) # down
         return np.max([bup,bdn]) # maximum
+    def copy(self):
+        from copy import deepcopy
+        return deepcopy(self)
 
 
 

@@ -145,9 +145,10 @@ def optimal_maxm(v,qtci_error=1e-2):
         vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
         f = lambda i: vi[int(i)] # function to interpolate
         wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
+        qtci_tol = qtci_error*pick_randomly([0.3,1.,3]) # pick one
         IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
                                        nb=nb,backend="C++",
-                                       qtci_tol = qtci_error,
+                                       qtci_tol = qtci_tol,
                                        qtci_kernel = random_qtci_kernel(), # random kernel
                                        qtci_accumulative = False, # non acc mode
                                        qtci_fullPiv = fullPivi, # pivotting mode
@@ -161,6 +162,9 @@ def optimal_maxm(v,qtci_error=1e-2):
                 kwargs_opt = IP.get_kwargs() # get the optimal kwargs 
     if kwargs_opt is None: return None # this did not work
 #    print("Rook QTCI, optimal has fraction",frac,"error",err)
+    # do an optimization of the chosen one
+    from .qtcirecipestk.refine import refine_qtci_kwargs
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt) # get best fraction
     return frac,kwargs_opt # return optimal parameters
 
 
@@ -224,5 +228,8 @@ def optimal_accumulative(v,qtci_error=1e-2):
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
     if kwargs_opt is None: return None # this did not work
 #    print("Accumulative QTCI, optimal has fraction",frac,"error",err)
+    # do an optimization of the chosen one
+    from .qtcirecipestk.refine import refine_qtci_kwargs
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt) # get best fraction
     return frac,kwargs_opt # return optimal parameters
 

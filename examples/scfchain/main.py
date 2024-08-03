@@ -4,13 +4,13 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 10 # exponential length
+L = 14 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
     omega = np.pi*2.*np.sqrt(2.)/20
     return 1. + 0.2*np.cos(omega*r[0]) #+0.2*np.cos(np.pi*2.*np.sqrt(3.)*r[0])
-H.modify_hopping(f)
+#H.modify_hopping(f)
 
 # get the SCF object
 SCF = H.get_SCF_Hubbard(U=3.0) # generate a selfconsistent object

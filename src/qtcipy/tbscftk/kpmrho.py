@@ -198,6 +198,7 @@ def get_dos_i(m,i=0,
         npol_scale=4, # rescale number of polynomials
         **kwargs):
     """Return electronic density at site i"""
+    print(delta) ; exit()
     if kpm_scale is None: # if none provided
         scale = estimate_bandwidth(m) # estimate the bandwidth
     else: scale = kpm_scale # given from input
