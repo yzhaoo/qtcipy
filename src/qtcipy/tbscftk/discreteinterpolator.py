@@ -25,6 +25,7 @@ class Discrete_Interpolator():
         self.error = IP.error
         self.qtci_maxm = IP.qtci_maxm # store
         self.qtci_accumulative = IP.qtci_accumulative # store
+        self.qtci_kernel = IP.qtci_kernel # store
         self.qtci_fullPiv = IP.qtci_fullPiv # store 
         self.qtci_args = IP.qtci_args
         self.qtci_pivot1 = IP.qtci_pivot1
@@ -71,6 +72,7 @@ class Interpolator_norb():
         # common for all #
         self.qtci_maxm = IPs[0].qtci_maxm # store the list
         self.qtci_accumulative = IPs[0].qtci_accumulative # store the list
+        self.qtci_kernel = IPs[0].qtci_kernel # store the list
         self.qtci_fullPiv = IPs[0].qtci_fullPiv # store the list
         self.qtci_tol = IPs[0].qtci_tol # store the list
         self.qtci_pivot1 = IPs[0].qtci_pivot1 # store the list
@@ -102,6 +104,7 @@ class Interpolator_norb():
         out["qtci_norb"] = self.norb
         out["qtci_maxm"] = self.qtci_maxm
         out["qtci_accumulative"] = self.qtci_accumulative
+        out["qtci_kernel"] = self.qtci_kernel
         out["qtci_fullPiv"] = self.qtci_fullPiv
         out["qtci_tol"] = self.qtci_tol
         out["qtci_pivot1"] = self.qtci_pivot1

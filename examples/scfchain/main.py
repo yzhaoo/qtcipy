@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 8 # exponential length
+L = 10 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -23,7 +23,7 @@ SCF = H.get_SCF_Hubbard(U=3.0) # generate a selfconsistent object
 #SCF.solve(info=True) # solve the SCF
 SCF.solve(info=True,
         use_qtci=True,use_kpm = True,
-#        info_qtci = True,
+        info_qtci = True,
 #        maxite = 1,
         qtci_maxm = 2, # bond dimension to use as initial guess
 #        maxite = 1,

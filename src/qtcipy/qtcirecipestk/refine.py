@@ -3,9 +3,27 @@ from ..qtcirecipes import get_frac_args
 from copy import deepcopy as cp
 
 
+
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
-    return global_pivot_refinement(v,kw,**kwargs)
+    return refine_kernel(v,kw,**kwargs)
+
+
+def refine_kernel(v,kw,**kwargs):
+    """Change the kernel, to optimize the QTCI"""
+    # input is all the kwargs of QTCI, the variable is in qtci_kernel
+    kp = 0.25
+    if "qtci_kernel" in kw:
+        if "qtci_power_kernel" in kw:
+            kp = kw["qtci_power_kernel"] # get the previous kernel
+    kps = [kp,0.8*kp,kp/0.8] # try to refine it
+    kwlist = [] # empty list
+    for kpi in kps: # loop
+        kwi = cp(kw) # make a copy
+        kwi["qtci_kernel"] = {"qtci_power_kernel":kpi}
+        kwlist.append(kwi) # store
+    return best_kwargs(v,kwlist,**kwargs) # return the best
+
 
 
 

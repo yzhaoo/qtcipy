@@ -1,6 +1,9 @@
 import numpy as np
 
 from .tbscftk import discreteinterpolator
+from .qtcirecipestk.qtcikernels import random_kernel as random_qtci_kernel
+
+
 
 methods = ["maxm","accumulative"]
 #methods = ["maxm"]
@@ -124,41 +127,38 @@ def get_lim(v,dim=1,norb=1,**kwargs):
 
 def optimal_maxm(v,qtci_error=1e-2):
     """Find the optimal QTCI with the non accumulative method"""
-    ntries = 1 # average over these many tries
-    maxmi = 3 # start with 3
+    ntries = 10 # average over these many tries
     kwargs_opt = None # output arguments
     err,frac,pivot,maxm = 1e7,1.0,None,None # initialize
     if len(v)<10: norbs = [1]
     else: norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
-    while True: # infinite loop over bond dimensions, until it works
+    for itry in range(ntries): # try as many times
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
 #        for norbi in norbs: # loop over norbs
         nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
         fullPivi = np.random.random()<0.5 # True or False randomly
-        for it in range(ntries): # these many tries, pick the best
-            #### generate global pivots ####
-            use_gp = np.random.random()<0.5 # True or False randomly
-#            qtci_args = random_global_pivots(weights) # get global pivots
-            ################################
-            vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
-            f = lambda i: vi[int(i)] # function to interpolate
-            wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
-            IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
-                                           nb=nb,backend="C++",
-                                           qtci_tol = qtci_error,
-                                           qtci_accumulative = False, # non acc mode
-                                           qtci_fullPiv = fullPivi, # pivotting mode
-                                           qtci_maxm=maxmi) # maxm
-            erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
-            fraci = IP.frac # fraction of the space
-            if erri<qtci_error: # desired error level has been reached
-                if fraci<frac: # better fraction of space than the stored one
-                    err = erri # store the error
-                    frac = fraci # store the best fraction
-                    kwargs_opt = IP.get_kwargs() # get the optimal kwargs 
-        maxmi = int(1.1*maxmi) + 1 # next bond dimension
-        if maxmi>300: break # cutoff
+        maxmi = pick_randomly(range(3,300)) # randomly
+        #### generate global pivots ####
+        use_gp = pick_randomly([True,False]) # True or False randomly
+        ################################
+        vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
+        f = lambda i: vi[int(i)] # function to interpolate
+        wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
+        IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
+                                       nb=nb,backend="C++",
+                                       qtci_tol = qtci_error,
+                                       qtci_kernel = random_qtci_kernel(), # random kernel
+                                       qtci_accumulative = False, # non acc mode
+                                       qtci_fullPiv = fullPivi, # pivotting mode
+                                       qtci_maxm=maxmi) # maxm
+        erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+        fraci = IP.frac # fraction of the space
+        if erri<qtci_error: # desired error level has been reached
+            if fraci<frac: # better fraction of space than the stored one
+                err = erri # store the error
+                frac = fraci # store the best fraction
+                kwargs_opt = IP.get_kwargs() # get the optimal kwargs 
     if kwargs_opt is None: return None # this did not work
 #    print("Rook QTCI, optimal has fraction",frac,"error",err)
     return frac,kwargs_opt # return optimal parameters
@@ -182,43 +182,46 @@ def random_global_pivots(v):
 
 
 
+def pick_randomly(v):
+    """Given a list, return an element randomly"""
+    return v[np.random.randint(len(v))] # return 
+
+
+
 
 def optimal_accumulative(v,qtci_error=1e-2):
     """Find the optimal QTCI with the non accumulative method"""
-    ntries = 1 # average over these many tries
+    ntries = 10 # best of these many tries
     maxmi = 3 # start with 10
     kwargs_opt = None # none
     err,frac,pivot,maxm = 1e7,1.0,None,None # initialize
     if len(v)<10: norbs = [1]
     else: norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
-    while True: # infinite loop over bond dimensions, until it works
+    for it in range(ntries): # these many tries, pick the best
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
-#        for norbi in norbs: # loop over norbs
-        vi = v + qtci_error/10*(np.random.random(len(v)) - 0.5) # slightly random
+        vi = v + qtci_error/100*(np.random.random(len(v)) - 0.5) # slightly random
         f = lambda i: vi[int(i)] # function to interpolate
         nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
-        tol_facs = [1.0,0.5,2.] # factors to consider
-        for tol_fac in tol_facs: # loop over factoring
-            qtci_tol = qtci_error*tol_fac # check a potential refactoring
-            for it in range(ntries): # these many tries, pick the best
-                wi = [weights[norbi*i] for i in range(2**nb)] # redefine weight
-                fullPivi = np.random.random()<0.5 # True or False randomly
-                IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
-                                               nb=nb,backend="C++",
-                                               qtci_tol = qtci_tol, # tolerance
-                                               qtci_accumulative = True, # non acc mode
-                                               qtci_fullPiv = fullPivi, # pivotting mode
-                                               qtci_maxm=maxmi) # maxm
-                erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
-                fraci = IP.frac # fraction of the space
-                if erri<qtci_error: # desired error level has been reached
-                    if fraci<frac: # better fraction of space than the stored one
-                        err = erri # store the error
-                        frac = fraci # store the best fraction
-                        kwargs_opt = IP.get_kwargs() # get the optimal kwargs 
+        tol_fac = pick_randomly([1.0,0.5,2.]) # factors to consider
+        qtci_tol = qtci_error*tol_fac # check a potential refactoring
+        fullPivi = pick_randomly([True,False]) # full pivots
+        maxmi = pick_randomly(range(3,300)) # bond dimension
+        IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
+                                       nb=nb,backend="C++",
+                                       qtci_tol = qtci_tol, # tolerance
+                                       qtci_kernel = random_qtci_kernel(), # random kernel
+                                       qtci_accumulative = True, # non acc mode
+                                       qtci_fullPiv = fullPivi, # pivotting mode
+                                       qtci_maxm=maxmi) # maxm
+        erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+        fraci = IP.frac # fraction of the space
+        if erri<qtci_error: # desired error level has been reached
+            if fraci<frac: # better fraction of space than the stored one
+                err = erri # store the error
+                frac = fraci # store the best fraction
+                kwargs_opt = IP.get_kwargs() # get the optimal kwargs 
         maxmi = int(1.1*maxmi) + 1 # next bond dimension
-        if maxmi>300: break # cutoff
     if kwargs_opt is None: return None # this did not work
 #    print("Accumulative QTCI, optimal has fraction",frac,"error",err)
     return frac,kwargs_opt # return optimal parameters

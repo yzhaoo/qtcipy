@@ -6,6 +6,8 @@ path = os.path.dirname(os.path.realpath(__file__))
 # add xfacpy library
 sys.path.append(path+"/pylib/xfac/build/python")
 
+from .qtcirecipestk.qtcikernels import get_kernel
+
 import xfacpy
 
 class Interpolator():
@@ -13,12 +15,21 @@ class Interpolator():
         qtci_maxm=100, # initial bond dimension
         qtci_accumulative = False,
         qtci_tol = 1e-2,
+        qtci_kernel = {}, # no kernel provided
         qtci_pivot1 = None,
         qtci_fullPiv = True,
             **kwargs):
         """Initialize the interpolator object"""
-        qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  # build the quantics grid
-        self.f = memoize(f)
+        # build the quantics grid
+        qgrid = xfacpy.QuanticsGrid(a=xlim[0],b=xlim[1], nBit=nb)  
+        self.kernel = get_kernel(qtci_kernel) # get the kernel
+        self.inv_kernel = get_kernel(qtci_kernel,inverse=True) # get the kernel
+        ## apply kernel to the function and tol
+        fk = lambda x: self.kernel(f(x)) # redefine
+        qtci_tol = self.kernel(qtci_tol) # store
+        self.qtci_kernel = qtci_kernel # store the kernel
+        ######
+        self.f = memoize(fk) # memoize
         # initialize the pivot
         if qtci_pivot1 is None: 
             r = np.random.random()*xlim[1] + xlim[0] # random point
@@ -59,6 +70,8 @@ class Interpolator():
         else:
             xi = self.qgrid.coord_to_id([xs])
             out = self.qtt.eval(xi)
+        # apply the inverse kernel
+        out = self.inv_kernel(out)
         return out
     def integrate(self,axis=None,**kwargs):
         raise
