@@ -11,7 +11,7 @@ def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
         tol = kwargs["qtci_tol"] # target tolerance
     else: # not given
         if scf_error is not None: # if given
-            tol = min([tol,scf_error]) # overwrite
+            tol = min([tol,scf_error/2.]) # overwrite
     # obtain the optimal QTCI for this data
     frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs,
             recursive=True,**kw)
