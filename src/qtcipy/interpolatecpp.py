@@ -26,7 +26,8 @@ class Interpolator():
         self.inv_kernel = get_kernel(qtci_kernel,inverse=True) # get the kernel
         ## apply kernel to the function and tol
         fk = lambda x: self.kernel(f(x)) # redefine
-        qtci_tol = self.kernel(qtci_tol)
+        self.qtci_tol = qtci_tol # store
+        qtci_tol_kernel = self.kernel(qtci_tol)
         self.qtci_kernel = qtci_kernel # store the kernel
         ######
         self.f = memoize(fk) # memoize
@@ -38,7 +39,7 @@ class Interpolator():
         ci,qtci_args = get_ci(self.f,nb=nb,qgrid=qgrid,
                 qtci_maxm = qtci_maxm,
                 qtci_accumulative = qtci_accumulative,
-                qtci_tol = qtci_tol,
+                qtci_tol = qtci_tol_kernel,
                 qtci_pivot1 = qtci_pivot1,
                 qtci_fullPiv = qtci_fullPiv,
                 **kwargs)
@@ -48,7 +49,6 @@ class Interpolator():
         self.qtci_maxm = qtci_maxm
         self.qtci_accumulative = qtci_accumulative
         self.qtci_fullPiv = qtci_fullPiv
-        self.qtci_tol = qtci_tol
         self.qtci_pivot1 = qtci_pivot1
         self.nb = nb
         self.xlim = xlim

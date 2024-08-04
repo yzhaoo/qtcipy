@@ -101,7 +101,7 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
                 log=None, # dictionary for logs
                 use_dynamical_qtci = True, # update the QTCI on the fly
                 chiral_AF = False, # flag to enforce chiral AF
-                mix=0.3,info=False,**kwargs):
+                mix=0.5,info=False,**kwargs):
     """
     Perform a selfconsistent Hubbard calculation
        - h0 is the single particle Hamiltonian
