@@ -7,6 +7,7 @@ import numpy as np
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
     kw0 = cp(kw) # make a copy
+    kw = refine_global_pivots(v,kw,**kwargs)[1] # add global pivots
     kw = refine_pivot1(v,kw,**kwargs)[1] # refine the pivot
     kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
     kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
@@ -52,23 +53,70 @@ def refine_tol(v,kw,**kwargs):
 
 
 
+def refine_global_pivots(v,kw,**kwargs):
+    """Refine the global pivots"""
+    ps = ["nothing","add","remove"]
+    def convert(p0,f):
+        if f=="nothing": return p0 # do nothing
+        elif f=="add": 
+            return [ip for ip in p0] + [None]
+        elif f=="remove":
+            if len(p0)>0:
+                pi = [ip for ip in p0] # make a copy
+                del pi[np.random.randint(len(pi))] # remove one
+                return pi
+            else: return [] # empty list
+        else: raise
+    return refine_parameter(v,kw,name="qtci_global_pivots",p0=[],
+            convert = convert,
+            in_qtci_args=True,
+            scales=ps,**kwargs)
+
+
+
+
+
+
+#
+#def refine_kernel(v,kw,**kwargs):
+#    """Refine the kernel"""
+#    kps = [kp,kp,kp]
+#    kps[1] = kp*(1. + 0.3*np.random.random()) # increase randomly
+#    kps[2] = kp*(1. - 0.3*np.random.random()) # reduce randomly
+#    return refine_parameter(v,kw,name="qtci_kernel",p0=0.01,
+#            convert = convert,
+#            scales=kps,**kwargs)
+#
+#
+
+
 
 def refine_parameter(v,kw,name=None,p0=None,convert=lambda x,y: x*y,
-        failsafe=True,
+        failsafe=True,in_qtci_args=False,
         scales = [1.],**kwargs):
     """Change the maxm to optimize the QTCI"""
     kw0 = cp(kw) # make a copy, just in case this fails
     if kw is None: return 1.0,None
     # input is all the kwargs of QTCI, the variable is in qtci_kernel
     p = p0
-    if name in kw: # check if the parameter is present
-        p = kw[name] # get the parameter
+    if not in_qtci_args: # not in qtci_args
+        if name in kw: # check if the parameter is present
+            p = kw[name] # get the parameter
+    else: # if in qtci args
+        if "qtci_args" in kw: # if it has been set up
+            if name in kw["qtci_args"]: # check if the parameter is present
+                p = kw["qtci_args"][name] # get the parameter
+        else: # dictionary does not exist, create it
+            kw["qtci_args"] = {name : p0} # create teh dictionary
     ps = scales # parameters redefinitions to try
     kwlist = [] # empty list
     for pi in ps: # loop
         pi = convert(p,pi) # make a conversion, if needed
         kwi = cp(kw) # make a copy
-        kwi[name] = pi # overwrite
+        if not in_qtci_args: # not in qtci_args
+            kwi[name] = pi # overwrite
+        else: # in QTCI args
+            kwi["qtci_args"][name] = pi # overwrite
         kwlist.append(kwi) # store
     frac,kwbest = best_kwargs(v,kwlist,**kwargs) # return the best
     if kwbest is None: 
@@ -96,6 +144,15 @@ def refine_kernel(v,kw,**kwargs):
         kwi["qtci_kernel"] = {"qtci_power_kernel":kpi}
         kwlist.append(kwi) # store
     return best_kwargs(v,kwlist,**kwargs) # return the best
+
+
+
+
+
+
+
+
+
 
 
 

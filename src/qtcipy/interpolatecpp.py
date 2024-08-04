@@ -104,6 +104,10 @@ def eval_ci(ci,qgrid,x):
 
 
 
+def random_pivot(p):
+    """Return a random pivot with the same shape as the input"""
+    return [np.random.randint(0,2) for i in p] # return this one
+
 
 
 
@@ -130,7 +134,9 @@ def get_ci(f, qgrid=None, nb=1,
     if qtci_accumulative: # accumulative mode
         ci,qtci_args = accumulative_train(ci,qtci_tol=qtci_tol,nb=nb,f=f,**kwargs)
     else: # conventional mode
-        ci,qtci_args = rook_train(ci,qtci_tol=qtci_tol,nb=nb,qgrid=qgrid,f=f,**kwargs)
+        ci,qtci_args = rook_train(ci,qtci_tol=qtci_tol,nb=nb,
+                qtci_pivot1=qtci_pivot1,
+                qgrid=qgrid,f=f,**kwargs)
     return ci,qtci_args # return the optimal bond dimension, for next iteration
 
 
@@ -169,6 +175,7 @@ def accumulative_train(ci,qtci_tol=1e-3,qgrid=None,
 
 def rook_train(ci,qtci_tol=1e-3,qgrid=None,
         info_qtci=False,
+        qtci_pivot1=None,
         qtci_args = {}, # empty distionary
         nb=1,f=None,
         **kwargs):
@@ -176,21 +183,23 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     # set the pivot if available
     if info_qtci:
         print("Rook QTCI mode")
-    if "qtci_use_global_pivots" in qtci_args: # check if global pivots should be used
-        if qtci_args["qtci_use_global_pivots"]: # if they are used
-            if info_qtci:
-                if "qtci_global_pivots" in qtci_args:
-                    print("#### Adding global pivots")
-                    gp = qtci_args["qtci_global_pivots"] # pivots, in real coordinates
-#            gp = [qgrid.coord_to_id([x]) for x in glob_piv] # to quantics coordinates
-                    ci.addPivotsAllBonds(gp[0]) # global pivots
-                    ci.makeCanonical()
-    if "qtci_rook_pivots" in qtci_args: # pivots are given
-        print("#### Adding rook QTCI pivots")
-        qtci_pivots = qtci_args["qtci_rook_pivots"]
-        for i in range(len(qtci_pivots)): # loop
-            ci.addPivotsAt(qtci_pivots[i],i) # add pivots
-        ci.makeCanonical()
+    ### Add global pivots ####
+    if "qtci_global_pivots" in qtci_args: # if there are global pivots
+        ### QTCI global pivots is a list with the pivots ###
+        gp = qtci_args["qtci_global_pivots"] # get the list with pivots
+        for i in range(len(gp)): # restart the None ones
+            if gp[i] is None: # initialize None ones
+                gp[i] = random_pivot(qtci_pivot1) # pick a random one
+        qtci_args["qtci_global_pivots"] = gp # store again
+        if len(gp)>0: # if there are pivots
+            ci.addPivotsAllBonds(gp) # global pivots
+            ci.makeCanonical() # for stability (?)
+#    if "qtci_rook_pivots" in qtci_args: # pivots are given
+#        print("#### Adding rook QTCI pivots")
+#        qtci_pivots = qtci_args["qtci_rook_pivots"]
+#        for i in range(len(qtci_pivots)): # loop
+#            ci.addPivotsAt(qtci_pivots[i],i) # add pivots
+#        ci.makeCanonical()
     while not ci.isDone(): # iterate until convergence
         ci.iterate()
         err = ci.pivotError[len(ci.pivotError)-1]
@@ -207,7 +216,7 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
     if info_qtci:
         print("Eval frac = ",evf,"error = ",err)
 #    args = dict() # dictionary with the arguments
-    qtci_args["qtci_global_pivots"] = [ci.getPivotsAt(ii) for ii in range(ci.len()-1)]
+#    qtci_args["qtci_global_pivots"] = [ci.getPivotsAt(ii) for ii in range(ci.len()-1)]
     return ci,qtci_args
 
 

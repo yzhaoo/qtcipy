@@ -181,21 +181,21 @@ def optimal_maxm(v,qtci_error=1e-2):
 
 
 
-
-def random_global_pivots(v):
-    """Generte random global pivots"""
-    use_gp = np.random.random()<0.5 # True or False randomly
-    qtci_args = {"qtci_use_global_pivots":use_gp} # store
-    ntries = 5
-    if use_gp: # use pivots
-        n = len(v) # number of elements
-        out = []
-        for i in range(ntries): # one every 100
-            out.append(pick_index(v)) # store
-        out = np.unique(out) # get unique ones
-        qtci_args["qtci_global_pivots_real"] = out
-    return qtci_args # return
-
+#
+#def random_global_pivots(v):
+#    """Generte random global pivots"""
+#    use_gp = np.random.random()<0.5 # True or False randomly
+#    qtci_args = {"qtci_use_global_pivots":use_gp} # store
+#    ntries = 5
+#    if use_gp: # use pivots
+#        n = len(v) # number of elements
+#        out = []
+#        for i in range(ntries): # one every 100
+#            out.append(pick_index(v)) # store
+#        out = np.unique(out) # get unique ones
+#        qtci_args["qtci_global_pivots_real"] = out
+#    return qtci_args # return
+#
 
 
 def pick_randomly(v):
