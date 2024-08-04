@@ -27,7 +27,7 @@ class Interpolator():
         ## apply kernel to the function and tol
         fk = lambda x: self.kernel(f(x)) # redefine
         self.qtci_tol = qtci_tol # store
-        qtci_tol_kernel = self.kernel(qtci_tol)
+        qtci_tol_kernel = self.kernel(qtci_tol) # tol after applying the kernel
         self.qtci_kernel = qtci_kernel # store the kernel
         ######
         self.f = memoize(fk) # memoize
