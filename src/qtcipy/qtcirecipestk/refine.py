@@ -7,6 +7,7 @@ import numpy as np
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
     kw0 = cp(kw) # make a copy
+    kw = refine_pivot1(v,kw,**kwargs)[1] # refine the bond dimension
     kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
     kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
     return refine_kernel(v,kw,failsafe=False,**kwargs)
@@ -18,13 +19,23 @@ def refine_maxm(v,kw,**kwargs):
     ps = [1.0,1.0,1.0]
     ps[1] = 1.0 - 0.3*np.random.random() # random decrease
     ps[2] = 1.0 + 0.3*np.random.random() # random increase
-    def convert(p):
-        if p<3.: return 3 # minimum bond dim
-        elif p>400: return 400 # maximum bond dim
-        else: return int(np.round(p)) # the closest integer
+    def convert(p,f):
+        if p*f<3.: return 3 # minimum bond dim
+        elif p*f>400: return 400 # maximum bond dim
+        else: return int(np.round(p*f)) # the closest integer
     return refine_parameter(v,kw,name="qtci_maxm",p0=10,convert=convert,
             scales=ps,**kwargs)
 
+
+
+def refine_pivot1(v,kw,**kwargs):
+    """Refine the bond dimension"""
+    ps = [1.0,None,None] # original and two news
+    def convert(p,f):
+        if f is None: return None # force finding a new one
+        else: return p # old one
+    return refine_parameter(v,kw,name="qtci_pivot1",p0=None,
+            convert=convert,**kwargs)
 
 
 
@@ -42,7 +53,7 @@ def refine_tol(v,kw,**kwargs):
 
 
 
-def refine_parameter(v,kw,name=None,p0=None,convert=lambda x: x,
+def refine_parameter(v,kw,name=None,p0=None,convert=lambda x,y: x*y,
         failsafe=True,
         scales = [1.],**kwargs):
     """Change the maxm to optimize the QTCI"""
@@ -52,10 +63,10 @@ def refine_parameter(v,kw,name=None,p0=None,convert=lambda x: x,
     p = p0
     if name in kw: # check if the parameter is present
         p = kw[name] # get the parameter
-    ps = p*np.array(scales) # parameters to try
+    ps = scales # parameters redefinitions to try
     kwlist = [] # empty list
     for pi in ps: # loop
-        pi = convert(pi) # make a conversion, if needed
+        pi = convert(p,pi) # make a conversion, if needed
         kwi = cp(kw) # make a copy
         kwi[name] = pi # overwrite
         kwlist.append(kwi) # store
