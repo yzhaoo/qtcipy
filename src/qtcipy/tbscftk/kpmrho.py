@@ -4,7 +4,38 @@
 ## if you have a multiorbital model, this will likely not work
 
 import numpy as np
-from .hubbard import get_density_i
+import sys
+import os
+sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+
+
+def get_density_i_from_dos(m,fermi=0.,**kwargs):
+    """Return electronic density at site i"""
+    (es,ds) = get_dos_i(m,**kwargs) # energies and DOS
+    ds = ds.real # real part
+    den = np.trapz(ds[es<fermi])/np.trapz(ds) # return filling of the site
+    return den
+
+
+
+def get_density_i_direct(m,
+        kpm_prec="single",
+        kpm_scale = None, # scale of KPm method
+        kernel="jackson", # kernel
+        **kwargs):
+    from pyqula.kpmtk.density import get_density
+    den = get_density(m,kpm_prec=kpm_prec,scale=kpm_scale,
+            kernel=kernel,**kwargs)
+#    den1 = get_density_i_from_dos(m,**kwargs)
+#    print(den,den1)
+    return den
+
+
+
+#get_density_i = get_density_i_from_dos # use this method
+get_density_i = get_density_i_direct # use this method
+
+
 
 #
 def memoize(func):
@@ -204,6 +235,7 @@ def get_dos_i(m,i=0,
     npol = int(npol_scale*scale/delta) # number of polynomials
     ne = npol*10 # scale the number of energies accordingly
     (es,ds) = kpm.ldos(m,i=i,ne=ne,kernel=kernel,kpm_prec=kpm_prec,
+            scale=scale,
             npol=npol,**kwargs) # compute the LDOS with KPM
     return es,ds.real
 

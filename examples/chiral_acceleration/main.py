@@ -13,14 +13,16 @@ def f(r):
 H.modify_hopping(f)
 
 # generate two scf objects
-U = 3.0
+U = 4.0
 SCF_ED = H.get_SCF_Hubbard(U=U) # generate a selfconsistent object
 SCF_QT = H.get_SCF_Hubbard(U=U) # generate a selfconsistent object
 
-SCF_ED.solve() # full solution
-SCF_QT.solve(use_qtci=True,use_kpm = True,
+SCF_ED.solve(use_qtci=False,use_kpm = False,info=True) # full solution
+SCF_QT.solve(use_qtci=False,use_kpm = True,
 #        qtci_maxm=10,
+        info=True,
         backend = "C++",
+        delta=1e0,
 #        qtci_tol = 1e-2,
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF

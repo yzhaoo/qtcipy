@@ -47,6 +47,8 @@ from copy import deepcopy as cp
 def initial_qtci_kwargs(SCF,**kwargs):
     """Return a reasonable initial guess for the kwargs
     of a QTCI for an SCF object"""
+    if "use_qtci" in kwargs:
+        if not kwargs["use_qtci"]: return {}
     if SCF.qtci_kwargs is None: # first iteration
         qtci_kwargs = {"qtci_maxm":400} # reasonable guess
         qtci_kwargs["qtci_accumulative"] = True # accumulative mode
@@ -72,7 +74,16 @@ def initial_qtci_kwargs(SCF,**kwargs):
 
 
 
-
+def dynamical_update(scf,use_dynamical_qtci=True,use_qtci=True,**kwargs):
+    """Dynamically update the QTCI"""
+    if not use_qtci: return # do nothing
+    mz = scf.Mz # magnetization
+    error = scf.scf_error
+    if use_dynamical_qtci: # update the QTCI options
+        qtci_kwargs = get_qtci_kwargs(kwargs,mz,scf_error=error) # get the new one
+        overwrite_qtci_kwargs(kwargs,qtci_kwargs) # overwrite
+        scf.qtci_kwargs = qtci_kwargs # overwrite the options
+    else: return # do nothing
 
 
 

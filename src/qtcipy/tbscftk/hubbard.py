@@ -3,8 +3,12 @@
 
 import numpy as np
 import sys
-#import os
-#sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+import os
+sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+
+
+from .kpmrho import get_density_i
+
 
 def memoize(func):
     """Decorator to use a cache"""
@@ -18,14 +22,6 @@ def memoize(func):
         return result
     
     return memoized_func
-
-
-def get_density_i(m,fermi=0.,**kwargs):
-    """Return electronic density at site i"""
-    from .kpmrho import get_dos_i
-    (es,ds) = get_dos_i(m,**kwargs) # energies and DOS
-    ds = ds.real # real part
-    return np.trapz(ds[es<fermi])/np.trapz(ds) # return filling of the site
 
 
 def get_den_ed(h,fermi=0.,**kwargs):
@@ -74,7 +70,7 @@ def get_mz_kpm(h,use_qtci=True,**kwargs):
     else: # brute force
         def f(i): # function to interpolate
             dup = get_density_i(h,i=int(i),**kwargs)
-            return dup - 0.5 # magnetization
+            return (dup - 0.5)*2. # magnetization
         return np.array([f(i) for i in range(0,h.shape[0])])
 
 
@@ -154,12 +150,10 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
             print("Average magnetization",np.mean(np.abs(ddn-dup)))
             print("Max magnetization",np.max(np.abs(ddn-dup)))
         mz = dup - ddn # magnetization
-        if use_dynamical_qtci: # update the QTCI options
-            from .dynamicalqtci import overwrite_qtci_kwargs
-            from .dynamicalqtci import get_qtci_kwargs
-            qtci_kwargs = get_qtci_kwargs(kwargs,mz,scf_error=error) # get the new one
-            overwrite_qtci_kwargs(kwargs,qtci_kwargs) # overwrite
-            scf.qtci_kwargs = qtci_kwargs # overwrite the options
+        from .dynamicalqtci import dynamical_update
+        scf.Mz = mz # store magnetization
+        scf.scf_error = error # store error
+        dynamical_update(scf,**kwargs) # dynamical update of the QTCI if needed
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
         # stopping criteria
