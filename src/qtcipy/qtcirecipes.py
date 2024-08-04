@@ -42,7 +42,7 @@ def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
                 kw["qtci_error"] = 1.5*kw["qtci_error"]
             else:
                 kw["qtci_error"] = 0.01
-            print("Recalling QTCI optimization with lower threshold",kwargs["qtci_error"])
+            print("Recalling QTCI optimization with lower threshold",kw["qtci_error"])
             return optimal_qtci(v,recursive=True,kwargs0=kwargs0,**kw)
         else: # give up
             return None,None # none succeded
