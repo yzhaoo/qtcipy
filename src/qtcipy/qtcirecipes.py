@@ -11,7 +11,7 @@ methods = ["maxm","accumulative"]
 
 #### Acummulative mode has segfault randomly ####
 
-def optimal_qtci(v,kwargs0=None,**kwargs):
+def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
     methods_f = [] # empty list
     if "maxm" in methods: methods_f.append(optimal_maxm) 
     if "accumulative" in methods: methods_f.append(optimal_accumulative) 
@@ -27,18 +27,27 @@ def optimal_qtci(v,kwargs0=None,**kwargs):
         out = method(v,**kwargs) # compute this one
         if out is not None: # sucess
             outs.append(out) # store
+    kwmin,fracmin = None,1.0 # initialize the optimal ones
     if len(outs)>0: # if any succeded
-        kwmin,fracmin = None,1.0
         for out in outs:
             if out[0]<fracmin:
                 fracmin = out[0]
                 kwmin = out[1]
+    if kwmin is not None: # if an optimal one has been found
         return fracmin,kwmin
     else: # not a good one has been found
         if kwargs0 is not None: # if there was a guess, return that one
             return 1.0,kwargs0 # return the previous one
-        else: # nothing good
-            return None,None # none succeded
+        else: # if there was no guess, maybe worth trying again
+            if recursive: # if you want to try again
+                if "qtci_error" in kwargs["qtci_error"]:
+                    kwargs["qtci_error"] = 1.5*kwargs["qtci_error"]
+                else:
+                    kwargs["qtci_error"] = 0.01
+                print("Recalling QTCI optimization with lower threshold",kwargs["qtci_error"])
+                return optimal_qtci(v,recursive=True,kwargs0=None,**kwargs)
+            else: # give up
+                return None,None # none succeded
 
 
 

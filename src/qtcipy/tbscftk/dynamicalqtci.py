@@ -3,7 +3,7 @@ import numpy as np
 from ..qtcirecipes import optimal_qtci
 
 
-def get_qtci_kwargs(kwargs,v,scf_error=None):
+def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
     """Overwrite the QTCI optional arguments according
     to how the mean field is evolving"""
     tol = 1e-2 # default tol
@@ -13,7 +13,7 @@ def get_qtci_kwargs(kwargs,v,scf_error=None):
         if scf_error is not None: # if given
             tol = min([tol,scf_error]) # overwrite
     # obtain the optimal QTCI for this data
-    frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs)
+    frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs,**kw)
     if qtci_kwargs is None: # none succeded
         print("No fitting QTCI found, using default")
         return get_default(v)
@@ -58,7 +58,12 @@ def initial_qtci_kwargs(SCF,**kwargs):
         kw["use_qtci"] = True
         kw["use_kpm"] = True
         kw["backend"] = "C++"
+        kw["info"] = False
         kw["maxite"] = 1 # one iteration
+        mz = SCF0.H0.get_moire()*SCF0.MF[0] # make a guess
+        # get some kwargs
+        qtci_kwargs = get_qtci_kwargs(kwargs,mz,recursive=True) 
+        SCF0.qtci_kwargs = qtci_kwargs # use these ones
         SCF0.solve(**kw) # one iteration without accuracy
         print("SCF Initialization DONE")
         return SCF0.qtci_kwargs
