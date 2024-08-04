@@ -14,7 +14,7 @@ class Interpolator():
     def __init__(self,f,xlim=[0.,1.],nb=20,
         qtci_maxm=100, # initial bond dimension
         qtci_accumulative = False,
-        qtci_tol = 1e-2,
+        qtci_tol = 1e-3,
         qtci_kernel = {}, # no kernel provided
         qtci_pivot1 = None,
         qtci_fullPiv = True,

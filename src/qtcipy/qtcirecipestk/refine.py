@@ -3,14 +3,20 @@ from ..qtcirecipes import get_frac_args
 from copy import deepcopy as cp
 import numpy as np
 
+optimizations = ["maxm","global_pivots","pivot1","tol"]
+
 
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
     kw0 = cp(kw) # make a copy
-    kw = refine_global_pivots(v,kw,**kwargs)[1] # add global pivots
-    kw = refine_pivot1(v,kw,**kwargs)[1] # refine the pivot
-    kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
-    kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
+    if "global_pivots" in optimizations:
+        kw = refine_global_pivots(v,kw,**kwargs)[1] # add global pivots
+    if "pivot1" in optimizations:
+        kw = refine_pivot1(v,kw,**kwargs)[1] # refine the pivot
+    if "maxm" in optimizations:
+        kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
+    if "tol" in optimizations:
+        kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
     return refine_kernel(v,kw,failsafe=False,**kwargs)
 
 
@@ -55,6 +61,10 @@ def refine_tol(v,kw,**kwargs):
 
 def refine_global_pivots(v,kw,**kwargs):
     """Refine the global pivots"""
+    if "qtci_accumulative" in kw:
+        if kw["qtci_accumulative"]: 
+            ## accumulative mode does not have pivots
+            return 1.0,kw # do nothing
     ps = ["nothing","add","remove"]
     def convert(p0,f):
         if f=="nothing": return p0 # do nothing
