@@ -6,18 +6,28 @@ import numpy as np
 optimizations = ["maxm","global_pivots","pivot1","tol"]
 
 
-def refine_qtci_kwargs(v,kw,**kwargs):
+def refine_qtci_kwargs(v,kw,qtci_refine_ntries=5,**kwargs):
+    for i in range(qtci_refine_ntries): # these many tries
+        frac,kw = refine_qtci_kwargs_single(v,kw,**kwargs)
+    return frac,kw
+
+
+
+
+def refine_qtci_kwargs_single(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
     kw0 = cp(kw) # make a copy
     if "global_pivots" in optimizations:
-        kw = refine_global_pivots(v,kw,**kwargs)[1] # add global pivots
+        frac,kw = refine_global_pivots(v,kw,**kwargs) # add global pivots
     if "pivot1" in optimizations:
-        kw = refine_pivot1(v,kw,**kwargs)[1] # refine the pivot
+        frac,kw = refine_pivot1(v,kw,**kwargs) # refine the pivot
     if "maxm" in optimizations:
-        kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
+        frac,kw = refine_maxm(v,kw,**kwargs) # refine the bond dimension
     if "tol" in optimizations:
-        kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
-    return refine_kernel(v,kw,failsafe=False,**kwargs)
+        frac,kw = refine_tol(v,kw,**kwargs) # refine the tolerance
+    if "kernel" in optimizations:
+        frac,kw = refine_kernel(v,kw,failsafe,**kwargs) # optimize the kernel
+    return frac,kw # return the optimized result
 
 
 

@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 3 # exponential length
+L = 4 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):

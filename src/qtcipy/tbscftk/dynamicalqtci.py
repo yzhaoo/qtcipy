@@ -14,6 +14,7 @@ def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
             tol = min([tol,scf_error/5.]) # overwrite
     # obtain the optimal QTCI for this data
     frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs,
+            qtci_error_factor = 1.01, # call again if needed with the same error
             recursive=True,**kw)
     if qtci_kwargs is None: # none succeded
         print("No fitting QTCI found, using default")

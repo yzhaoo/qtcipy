@@ -11,7 +11,9 @@ methods = ["maxm","accumulative"]
 
 #### Acummulative mode has segfault randomly ####
 
-def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
+def optimal_qtci(v,recursive=False,
+        qtci_error_factor = 1.3,
+        kwargs0=None,**kwargs):
     methods_f = [] # empty list
     if "maxm" in methods: methods_f.append(optimal_maxm) 
     if "accumulative" in methods: methods_f.append(optimal_accumulative) 
@@ -39,11 +41,17 @@ def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
         kw = deepcopy(kwargs)
         if recursive: # if you want to try again
             if "qtci_error" in kw:
-                kw["qtci_error"] = 1.5*kw["qtci_error"]
+                kw["qtci_error"] = qtci_error_factor*kw["qtci_error"]
             else:
                 kw["qtci_error"] = 0.01
+            if "qtci_opt_ntries" in kw:
+                kw["qtci_refine_ntries"] = kw["qtci_opt_ntries"] + 1
+            else:
+                kw["qtci_refine_ntries"] = 5
             print("Recalling QTCI optimization with lower threshold",kw["qtci_error"])
-            return optimal_qtci(v,recursive=True,kwargs0=kwargs0,**kw)
+            return optimal_qtci(v,recursive=True,
+                    qtci_error_factor=qtci_error_factor,
+                    kwargs0=kwargs0,**kw)
         else: # give up
             return None,None # none succeded
 
@@ -135,7 +143,7 @@ def get_lim(v,dim=1,norb=1,**kwargs):
 
 
 
-def optimal_maxm(v,qtci_error=1e-2):
+def optimal_maxm(v,qtci_error=1e-2,**kwargs):
     """Find the optimal QTCI with the non accumulative method"""
     ntries = 10 # average over these many tries
     kwargs_opt = None # output arguments
@@ -176,7 +184,7 @@ def optimal_maxm(v,qtci_error=1e-2):
     # do an optimization of the chosen one
     from .qtcirecipestk.refine import refine_qtci_kwargs
     # get best fraction
-    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error) 
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error,**kwargs) 
     return frac,kwargs_opt # return optimal parameters
 
 
@@ -205,7 +213,7 @@ def pick_randomly(v):
 
 
 
-def optimal_accumulative(v,qtci_error=1e-2):
+def optimal_accumulative(v,qtci_error=1e-2,**kwargs):
     """Find the optimal QTCI with the non accumulative method"""
     ntries = 10 # best of these many tries
     maxmi = 3 # start with 10
@@ -243,6 +251,6 @@ def optimal_accumulative(v,qtci_error=1e-2):
 #    print("Accumulative QTCI, optimal has fraction",frac,"error",err)
     # do an optimization of the chosen one
     from .qtcirecipestk.refine import refine_qtci_kwargs
-    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error) # get best fraction
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error,**kwargs) # get best fraction
     return frac,kwargs_opt # return optimal parameters
 

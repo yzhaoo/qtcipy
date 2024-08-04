@@ -206,10 +206,10 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
         if qtci_tol is not None: # if tol given, break when tol reached
             if err<qtci_tol: # tolerance reached, check a few random points
                 err_est = estimate_error(ci,f,nb=nb,qgrid=qgrid)
-                if err_est<qtci_tol: # error semms ok, stopping
+#                if err_est<qtci_tol: # error semms ok, stopping
 #                    if info_qtci:
 #                        print("QTCI pivot tol reached",err," stopping training")
-                    break # stop loop
+#                    break # stop loop
     # evaluate error #
     evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
     err = ci.pivotError[len(ci.pivotError)-1] # error
