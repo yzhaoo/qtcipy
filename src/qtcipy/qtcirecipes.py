@@ -35,18 +35,17 @@ def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
     if kwmin is not None: # if an optimal one has been found
         return fracmin,kwmin
     else: # not a good one has been found
-        if kwargs0 is not None: # if there was a guess, return that one
-            return 1.0,kwargs0 # return the previous one
-        else: # if there was no guess, maybe worth trying again
-            if recursive: # if you want to try again
-                if "qtci_error" in kwargs:
-                    kwargs["qtci_error"] = 1.5*kwargs["qtci_error"]
-                else:
-                    kwargs["qtci_error"] = 0.01
-                print("Recalling QTCI optimization with lower threshold",kwargs["qtci_error"])
-                return optimal_qtci(v,recursive=True,kwargs0=None,**kwargs)
-            else: # give up
-                return None,None # none succeded
+        from copy import deepcopy
+        kw = deepcopy(kwargs)
+        if recursive: # if you want to try again
+            if "qtci_error" in kw:
+                kw["qtci_error"] = 1.5*kw["qtci_error"]
+            else:
+                kw["qtci_error"] = 0.01
+            print("Recalling QTCI optimization with lower threshold",kwargs["qtci_error"])
+            return optimal_qtci(v,recursive=True,kwargs0=kwargs0,**kw)
+        else: # give up
+            return None,None # none succeded
 
 
 
