@@ -6,9 +6,10 @@ import numpy as np
 
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
+    kw0 = cp(kw) # make a copy
     kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
     kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
-    return refine_kernel(v,kw,**kwargs)
+    return refine_kernel(v,kw,failsafe=False,**kwargs)
 
 
 
@@ -42,8 +43,10 @@ def refine_tol(v,kw,**kwargs):
 
 
 def refine_parameter(v,kw,name=None,p0=None,convert=lambda x: x,
+        failsafe=True,
         scales = [1.],**kwargs):
     """Change the maxm to optimize the QTCI"""
+    kw0 = cp(kw) # make a copy, just in case this fails
     if kw is None: return 1.0,None
     # input is all the kwargs of QTCI, the variable is in qtci_kernel
     p = p0
@@ -56,8 +59,10 @@ def refine_parameter(v,kw,name=None,p0=None,convert=lambda x: x,
         kwi = cp(kw) # make a copy
         kwi[name] = pi # overwrite
         kwlist.append(kwi) # store
-    return best_kwargs(v,kwlist,**kwargs) # return the best
-
+    frac,kwbest = best_kwargs(v,kwlist,**kwargs) # return the best
+    if kwbest is None: 
+        if failsafe: return 1.0,kw0 # backup option
+    return frac,kwbest # return the ones found
 
 
 
@@ -129,6 +134,8 @@ def best_kwargs(v,kwarg_list,**kwargs):
             if o[0]<fracmin: # if better than previous
                 fracmin = o[0] # store
                 kwmin = o[1] # store
+    # if no kwargs satisfy the qtci_error criteria, the output will be None
+    # this has to be fixed
     return fracmin,kwmin
 
 
