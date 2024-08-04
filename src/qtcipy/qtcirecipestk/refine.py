@@ -7,7 +7,7 @@ import numpy as np
 def refine_qtci_kwargs(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
     kw0 = cp(kw) # make a copy
-    kw = refine_pivot1(v,kw,**kwargs)[1] # refine the bond dimension
+    kw = refine_pivot1(v,kw,**kwargs)[1] # refine the pivot
     kw = refine_maxm(v,kw,**kwargs)[1] # refine the bond dimension
     kw = refine_tol(v,kw,**kwargs)[1] # refine the tolerance
     return refine_kernel(v,kw,failsafe=False,**kwargs)
@@ -79,10 +79,6 @@ def refine_parameter(v,kw,name=None,p0=None,convert=lambda x,y: x*y,
 
 
 
-
-
-
-
 def refine_kernel(v,kw,**kwargs):
     """Change the kernel, to optimize the QTCI"""
     # input is all the kwargs of QTCI, the variable is in qtci_kernel
@@ -91,7 +87,9 @@ def refine_kernel(v,kw,**kwargs):
     if "qtci_kernel" in kw:
         if "qtci_power_kernel" in kw:
             kp = kw["qtci_power_kernel"] # get the previous kernel
-    kps = [kp,0.8*kp,kp/0.8] # try to refine it
+    kps = [kp,kp,kp]
+    kps[1] = kp*(1. + 0.3*np.random.random()) # increase randomly
+    kps[2] = kp*(1. - 0.3*np.random.random()) # reduce randomly
     kwlist = [] # empty list
     for kpi in kps: # loop
         kwi = cp(kw) # make a copy
