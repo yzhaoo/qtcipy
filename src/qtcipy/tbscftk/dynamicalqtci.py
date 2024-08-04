@@ -62,7 +62,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
         kw["maxite"] = 1 # one iteration
         mz = SCF0.H0.get_moire()*SCF0.MF[0] # make a guess
         # get some kwargs
-        qtci_kwargs = get_qtci_kwargs(kwargs,mz,recursive=True) 
+        qtci_kwargs = optimal_qtci(mz,recursive=True) 
         SCF0.qtci_kwargs = qtci_kwargs # use these ones
         SCF0.solve(**kw) # one iteration without accuracy
         print("SCF Initialization DONE")

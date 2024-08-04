@@ -15,7 +15,6 @@ def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
     methods_f = [] # empty list
     if "maxm" in methods: methods_f.append(optimal_maxm) 
     if "accumulative" in methods: methods_f.append(optimal_accumulative) 
-#    methods = [optimal_maxm] # these different methods
     outs = [] # storage
     if kwargs0 is not None: # if initial guess was given
         from .qtcirecipestk.refine import refine_qtci_kwargs
@@ -40,7 +39,7 @@ def optimal_qtci(v,recursive=False,kwargs0=None,**kwargs):
             return 1.0,kwargs0 # return the previous one
         else: # if there was no guess, maybe worth trying again
             if recursive: # if you want to try again
-                if "qtci_error" in kwargs["qtci_error"]:
+                if "qtci_error" in kwargs:
                     kwargs["qtci_error"] = 1.5*kwargs["qtci_error"]
                 else:
                     kwargs["qtci_error"] = 0.01
@@ -145,12 +144,13 @@ def optimal_maxm(v,qtci_error=1e-2):
     if len(v)<10: norbs = [1]
     else: norbs = [1,2,4]
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
+    maxms = [2+int(1.2**s) for s in range(30)] # set of bond dimensions
     for itry in range(ntries): # try as many times
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
 #        for norbi in norbs: # loop over norbs
         nb = np.log(len(v)/norbi)/np.log(2) ; nb = int(nb) # integer value
         fullPivi = np.random.random()<0.5 # True or False randomly
-        maxmi = pick_randomly(range(3,300)) # randomly
+        maxmi = pick_randomly(maxms) # randomly
         #### generate global pivots ####
         use_gp = pick_randomly([True,False]) # True or False randomly
         ################################
@@ -176,7 +176,8 @@ def optimal_maxm(v,qtci_error=1e-2):
 #    print("Rook QTCI, optimal has fraction",frac,"error",err)
     # do an optimization of the chosen one
     from .qtcirecipestk.refine import refine_qtci_kwargs
-    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt) # get best fraction
+    # get best fraction
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error) 
     return frac,kwargs_opt # return optimal parameters
 
 
@@ -213,6 +214,7 @@ def optimal_accumulative(v,qtci_error=1e-2):
     err,frac,pivot,maxm = 1e7,1.0,None,None # initialize
     if len(v)<10: norbs = [1]
     else: norbs = [1,2,4]
+    maxms = [2+int(1.2**s) for s in range(30)] # set of bond dimensions
     weights = np.abs(v - np.mean(v)) + qtci_error # weight for pivots
     for it in range(ntries): # these many tries, pick the best
         norbi = norbs[np.random.randint(len(norbs))] # one choice at random
@@ -222,7 +224,7 @@ def optimal_accumulative(v,qtci_error=1e-2):
         tol_fac = pick_randomly([1.0,0.5,2.]) # factors to consider
         qtci_tol = qtci_error*tol_fac # check a potential refactoring
         fullPivi = pick_randomly([True,False]) # full pivots
-        maxmi = pick_randomly(range(3,300)) # bond dimension
+        maxmi = pick_randomly(maxms) # bond dimension
         IP = discreteinterpolator.interpolate_norb(f,norb=norbi,xlim=[0,2**nb],
                                        nb=nb,backend="C++",
                                        qtci_tol = qtci_tol, # tolerance
@@ -242,6 +244,6 @@ def optimal_accumulative(v,qtci_error=1e-2):
 #    print("Accumulative QTCI, optimal has fraction",frac,"error",err)
     # do an optimization of the chosen one
     from .qtcirecipestk.refine import refine_qtci_kwargs
-    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt) # get best fraction
+    frac,kwargs_opt = refine_qtci_kwargs(v,kwargs_opt,qtci_error=qtci_error) # get best fraction
     return frac,kwargs_opt # return optimal parameters
 
