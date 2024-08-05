@@ -228,15 +228,27 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
 
 
 
-def estimate_error(ci,f,nb=1,ntries=10,qgrid=None):
+def estimate_error(ci,f,nb=1,qgrid=None):
     """Estimate the error between the function and the tensor train"""
     out = 0.
+    ntries = int(2**nb/100 + 3) # number of tries
+    out = np.zeros(ntries) # initialize
+    outci = np.zeros(ntries) # initialize
+    ### choose a few random points ###
     for i in range(ntries): # a few random points
         x = float(np.random.randint(0,2**nb)) # random point
         yci = eval_ci(ci,qgrid,x) # evaluate
         yreal = f(x)
-        out += np.abs(yci - yreal)
-    return out/ntries
+        outci[i] = yci
+        out[i] = yreal
+    from .qtcidistance import get_distance
+    disf = get_distance() # get the distance function
+    err1 = disf(outci,out)
+    ### now evaluate all the points that have been called ###
+    x,y = get_cache_info(f)
+    ytt = [eval_ci(ci,qgrid,xi) for xi in x]
+    err2 = disf(y,ytt) # error of the evaluated points
+    return err1 + err2
 
 
 

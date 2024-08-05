@@ -77,7 +77,9 @@ def get_frac_args(v,qtci_error=1e-2,**kwargs):
     vi = v + qtci_error/100*(np.random.random()-0.5) # add noise
     f = lambda i: vi[int(i)] # function
     IP = get_interpolator(f,nb,lim,**kwargs) 
-    erri = np.max(np.abs(np.array([IP(i) for i in range(len(v))]-v)))
+    from .qtcidistance import get_distance
+    disf = get_distance() # get the distance function
+    erri = disf([IP(i) for i in range(len(v))],v)
     if erri<qtci_error: # this is ok, return 
         return IP.frac,IP.get_kwargs() # return the fraction
     else: return None   # this did not work
@@ -172,7 +174,9 @@ def optimal_maxm(v,qtci_error=1e-2,**kwargs):
                                        qtci_accumulative = False, # non acc mode
                                        qtci_fullPiv = fullPivi, # pivotting mode
                                        qtci_maxm=maxmi) # maxm
-        erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+        from .qtcidistance import get_distance
+        disf = get_distance() # get the distance function
+        erri = disf([IP(i) for i in range(len(v))],v)
         fraci = IP.frac # fraction of the space
         if erri<qtci_error: # desired error level has been reached
             if fraci<frac: # better fraction of space than the stored one
@@ -239,7 +243,9 @@ def optimal_accumulative(v,qtci_error=1e-2,**kwargs):
                                        qtci_accumulative = True, # non acc mode
                                        qtci_fullPiv = fullPivi, # pivotting mode
                                        qtci_maxm=maxmi) # maxm
-        erri = np.max(np.abs([IP(i) - f(i) for i in range(norbi*2**nb)])) # max error
+        from .qtcidistance import get_distance
+        disf = get_distance() # get the distance function
+        erri = disf([IP(i) for i in range(len(v))],v)
         fraci = IP.frac # fraction of the space
         if erri<qtci_error: # desired error level has been reached
             if fraci<frac: # better fraction of space than the stored one
