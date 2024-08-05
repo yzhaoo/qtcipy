@@ -152,7 +152,7 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
         from .dynamicalqtci import dynamical_update
         scf.Mz = mz # store magnetization
         scf.scf_error = error # store error
-        dynamical_update(scf,**kwargs) # dynamical update of the QTCI if needed
+        dynamical_update(scf,info=info,**kwargs) # dynamical update of the QTCI if needed
         dup_old = mix*dup_old + (1.-mix)*dup # update
         ddn_old = mix*ddn_old + (1.-mix)*ddn # update
         # stopping criteria

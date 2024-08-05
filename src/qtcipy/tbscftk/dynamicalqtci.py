@@ -66,7 +66,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
         kw["maxite"] = 1 # one iteration
         mz = SCF0.H0.get_moire()*SCF0.MF[0] # make a guess
         # get some kwargs
-        qtci_kwargs = optimal_qtci(mz,recursive=True) 
+        qtci_kwargs = optimal_qtci(mz,recursive=False) 
         SCF0.qtci_kwargs = qtci_kwargs # use these ones
         SCF0.solve(**kw) # one iteration without accuracy
         print("SCF Initialization DONE")
@@ -75,13 +75,20 @@ def initial_qtci_kwargs(SCF,**kwargs):
 
 
 
-def dynamical_update(scf,use_dynamical_qtci=True,use_qtci=True,**kwargs):
+def dynamical_update(scf,use_dynamical_qtci=True,
+        maxerror_dyn_qtci=5e-2, # max error for dynamical QTCI 
+        info = False,
+        use_qtci=True,**kwargs):
     """Dynamically update the QTCI"""
     if not use_qtci: return # do nothing
     mz = scf.Mz # magnetization
     error = scf.scf_error
+    if error<maxerror_dyn_qtci: return # return if the error is small
+    from ..qtcirecipestk.refine import refine_qtci_kwargs
     if use_dynamical_qtci: # update the QTCI options
-        qtci_kwargs = get_qtci_kwargs(kwargs,mz,scf_error=error) # get the new one
+        if info: print("Dynamical update of the QTCI")
+        frac,qtci_kwargs = refine_qtci_kwargs(mz,kwargs)
+#        qtci_kwargs = get_qtci_kwargs(kwargs,mz,scf_error=error) # get the new one
         overwrite_qtci_kwargs(kwargs,qtci_kwargs) # overwrite
         scf.qtci_kwargs = qtci_kwargs # overwrite the options
     else: return # do nothing

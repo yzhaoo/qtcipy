@@ -27,9 +27,9 @@ SCF = H.get_SCF_Hubbard(U=3.0) # generate a selfconsistent object
 SCF.solve(info=True,
         use_qtci=True,use_kpm = True,
 #        info_qtci = True,
-        maxite = 7,
+#        maxite = 7,
         delta= 1e-3,
-        use_dynamical_qtci = False,
+#        use_dynamical_qtci = False,
         backend = "C++",
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF

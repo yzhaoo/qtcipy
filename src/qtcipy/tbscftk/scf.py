@@ -92,7 +92,7 @@ class SCF_Hubbard():
 
 
 
-def set_Hubbard(self,U):
+def set_Hubbard(self,U,U_profile="envelop"):
     """Process the Hubbard interaction"""
     if type(U)==np.array: # if array
         if len(self.H.H)==U.shape[0]:
@@ -103,6 +103,9 @@ def set_Hubbard(self,U):
         self.U = Ua
     else: # assume that it is a float
         self.U = U # store as float
+    # add the profile
+    from .profiles import get_profile
+    self.U = self.U*get_profile(self.H0,U_profile)
 
 
 

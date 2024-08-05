@@ -32,9 +32,16 @@ class Interpolator():
         ######
         self.f = memoize(fk) # memoize
         # initialize the pivot
-        if qtci_pivot1 is None: 
-            r = np.random.random()*xlim[1] + xlim[0] # random point
-            qtci_pivot1 = qgrid.coord_to_id([r]) # random place
+        while True: # select pivot
+            if qtci_pivot1 is None: # if pivot is None
+                r = np.random.random()*(xlim[1]-xlim[0]) + xlim[0] # random point
+                qtci_pivot1 = qgrid.coord_to_id([r]) # random place
+            r = qgrid.id_to_coord(qtci_pivot1) # to coordinate
+            y = self.f(r[0]) # compute
+            if np.abs(y)>1e-8: break
+            print("Choosing another pivot",r,y)
+            qtci_pivot1 = None # set to None
+        ###############
         # obtain the interpolator
         ci,qtci_args = get_ci(self.f,nb=nb,qgrid=qgrid,
                 qtci_maxm = qtci_maxm,
@@ -206,10 +213,10 @@ def rook_train(ci,qtci_tol=1e-3,qgrid=None,
         if qtci_tol is not None: # if tol given, break when tol reached
             if err<qtci_tol: # tolerance reached, check a few random points
                 err_est = estimate_error(ci,f,nb=nb,qgrid=qgrid)
-#                if err_est<qtci_tol: # error semms ok, stopping
+                if err_est<qtci_tol: # error semms ok, stopping
 #                    if info_qtci:
 #                        print("QTCI pivot tol reached",err," stopping training")
-#                    break # stop loop
+                    break # stop loop
     # evaluate error #
     evf = len(get_cache_info(f)[0])/(2**nb) # percentage of evaluations
     err = ci.pivotError[len(ci.pivotError)-1] # error
