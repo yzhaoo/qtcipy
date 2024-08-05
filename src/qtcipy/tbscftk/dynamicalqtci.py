@@ -6,7 +6,8 @@ from ..qtcirecipes import optimal_qtci
 def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
     """Overwrite the QTCI optional arguments according
     to how the mean field is evolving"""
-    tol = 1e-2 # default tol
+    from ..qtcidistance import qtci_error # the default error
+    tol = qtci_error # default tol
     if "qtci_tol" in kwargs: # overwrite if it is given
         tol = kwargs["qtci_tol"] # target tolerance
     else: # not given

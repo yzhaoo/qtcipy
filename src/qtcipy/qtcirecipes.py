@@ -70,7 +70,7 @@ def get_qtci_flags(kwargs):
 
 
 
-def get_frac_args(v,qtci_error=1e-2,**kwargs):
+def get_frac_args(v,qtci_error=1e-3,**kwargs):
     """Get the fraction with a certain set of parameters"""
     nb = get_nbits(v,**kwargs)
     lim = get_lim(v,**kwargs)

@@ -2,6 +2,10 @@
 
 import numpy as np
 
+
+qtci_error = 1e-3 # default error in QTCI
+
+
 def max_distance(a,b):
     a = np.array(a)
     b = np.array(b)
