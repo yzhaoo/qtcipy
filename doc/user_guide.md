@@ -125,5 +125,51 @@ The mean field is parametericed by quantics tensor cross at each step.
 By default, the QTCI architecture
 is optimized until a certain threshold in the SCF,
 and afterwards the same architecture is used to finish the 
-selfconsistent loop.
+selfconsistent loop. After a selfconsistent calculation, the architecture
+of the optimized QTCI is stored in 
+
+```python
+SCF.qtci_kwargs
+```
+
+If you want to switch of the dynamical optimization of the QTCI architecture,
+and rather provide fixed values at the beginning, you can do so as
+
+```python
+SCF.solve(use_qtci=True,use_kpm = True,mix=0.5,use_dynamical_qtci=False)
+```
+
+
+## Log with the performance of the mean field
+After performing a mean-field calculation you may want to see how the
+selfconsisstent error, the performance of the QTCI architecture evolved.
+You can access those varaibles from the SCF.log dictionary, in particular
+
+```python
+SCF.log["SCF_error"] # error in the SCF steps
+SCF.log["QTCI_eval"] # fraction of space evaluated by the QTCI
+```
+
+## Loading and saving
+
+If you want to save a selfconsistent calculation for later use, you do it as
+
+```python
+SCF.save() # error in the SCF steps
+```
+
+If you want to load a selfconsistent calculation, you can do it as
+
+```python
+SCF = SCF.load() # error in the SCF steps
+```
+
+## GPU acceleration
+
+If you want to use GPU acceleration in any part of the code that has it,
+you have to give as optional argument to the relevant function
+
+```python
+h.get_dos(kpm_cpugpu="GPU")
+```
 
