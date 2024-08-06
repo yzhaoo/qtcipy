@@ -86,7 +86,6 @@ def dynamical_update(scf,use_dynamical_qtci=True,
     mz = scf.Mz # magnetization
     error = scf.scf_error
     qtci_kwargs = scf.qtci_kwargs
-    print(qtci_kwargs) 
     if error<maxerror_dyn_qtci: return # return if the error is small
     from ..qtcirecipestk.refine import refine_qtci_kwargs
     if use_dynamical_qtci: # update the QTCI options
