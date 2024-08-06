@@ -112,14 +112,12 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
     dup = scf.MF[0].copy() # first mean-field
     ddn = scf.MF[1].copy() # second mean-field
     log = scf.log # the log
-    kwargs["AB"]  = scf.H0.AB # the sublattice
     kwargs["dim"]  = scf.H0.dim # the dimensionality
     # initialize a local log
     if log is not None:
         log0 = dict()
         log0["QTCI_eval"] = []
         log0["QTCI_error"] = []
-        log0["opt_qtci_maxm"] = log["opt_qtci_maxm"]
     else: log0 = None # default
     ddn_old = ddn.copy() # make a copy
     dup_old = dup.copy() # make a copy

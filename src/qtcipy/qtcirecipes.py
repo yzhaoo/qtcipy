@@ -52,8 +52,9 @@ def optimal_qtci(v,recursive=False,
             return optimal_qtci(v,recursive=True,
                     qtci_error_factor=qtci_error_factor,
                     kwargs0=kwargs0,**kw)
-        else: # give up
-            return None,None # none succeded
+        else: # give up, return the input
+            print("Nothing found")
+            return None,kwargs0 # none succeded
 
 
 
@@ -81,8 +82,10 @@ def get_frac_args(v,qtci_error=1e-3,**kwargs):
     disf = get_distance() # get the distance function
     erri = disf([IP(i) for i in range(len(v))],v)
     if erri<qtci_error: # this is ok, return 
+        kw = IP.get_kwargs()
         return IP.frac,IP.get_kwargs() # return the fraction
-    else: return None   # this did not work
+    else: 
+        return None   # this did not work
 
 
 

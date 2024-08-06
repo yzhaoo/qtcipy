@@ -132,11 +132,37 @@ of the optimized QTCI is stored in
 SCF.qtci_kwargs
 ```
 
-If you want to switch of the dynamical optimization of the QTCI architecture,
+If you want to switch off the dynamical optimization of the QTCI architecture,
 and rather provide fixed values at the beginning, you can do so as
 
 ```python
 SCF.solve(use_qtci=True,use_kpm = True,mix=0.5,use_dynamical_qtci=False)
+```
+
+
+The architecture of the QTCI is optimize at each selfconsistent step,
+as long as the error is large. If you want to change the threshold
+when the architecture is frozen, you can do it with
+
+```python
+from qtcipy.tbscf dynamicalqtci 
+dynamicalqtci.maxerror_dyn_qtci = 5e-2 $ this is the default
+```
+
+The architecture is optimized to minimize a certain error function. You can choose
+the error function to minimize with
+
+```python
+from qtcipy import qtcidistance
+qtcidistance.default = "mean" # this is the default, alternative is "max" 
+```
+
+
+If you want to restrict the optimization method of the QTCI, you can redefine the list of methods used as
+
+```python
+from qtcipy import qtcirecipes
+qtcirecipes.methods = ["maxm","accumulative"] # you can remove any if you wish
 ```
 
 

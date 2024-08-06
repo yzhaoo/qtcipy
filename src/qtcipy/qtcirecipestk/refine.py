@@ -16,7 +16,7 @@ def refine_qtci_kwargs(v,kw,qtci_refine_ntries=5,**kwargs):
 
 def refine_qtci_kwargs_single(v,kw,**kwargs):
     """Do small changes to the QTCI to see if it gets better"""
-    kw0 = cp(kw) # make a copy
+    frac0,kw0 = get_frac_args(v,qtci_error=1e10,**kw)
     if "global_pivots" in optimizations:
         frac,kw = refine_global_pivots(v,kw,**kwargs) # add global pivots
     if "pivot1" in optimizations:

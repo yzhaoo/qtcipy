@@ -88,14 +88,10 @@ def update_log(log,h,IP,info_qtci=False,**kwargs):
 
 
 
-def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
+def get_mz_kpm_qtci(h,log=None,**kwargs):
     """Return the magnetization of the system uisng KPM and QTCI"""
     f0 = get_function(h,**kwargs) # get the density to interpolate
-    if AB is None:
-        print("chiral mode requires sublattice")
-        raise
     def f(i): # new function
-#        return AB[int(i)]*(f0(i)-0.5)*2. # magnetization
         return (f0(i)-0.5)*2. # magnetization
     nb = get_nbits(h,**kwargs) # return the number of bits
     lim = get_lim(h,**kwargs) # get the limits
@@ -103,7 +99,6 @@ def get_mz_kpm_qtci(h,AB=None,log=None,**kwargs):
             **kwargs) # keyword arguments
     update_log(log,h,IP,**kwargs) # update the log
     out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
-#    out = AB*out # redefine
     return np.array(out) # return the output magnetization
 
 
@@ -116,8 +111,6 @@ def evaluate_interpolator(h,IP,dim=1,**kwargs):
     if dim==1: # 1D
         out = np.zeros(nat,dtype=np.float32) # initialize
         for i in range(nat): out[i] = IP(float(i)) # store result
-#        out[out<0.] = 0. # bounds
-#        out[out>1.] = 1. # bounds
         return out
     elif dim==2: # 2D
 #        raise
