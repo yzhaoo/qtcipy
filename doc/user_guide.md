@@ -3,7 +3,7 @@
 
 ## Creating the Hamiltonian
 
-The Hamiltonian can create from one of the sublibraries as
+The Hamiltonian can be created from one of the sublibraries as
 
 ```python
 from qtcipy.tbscftk import hamiltonians
@@ -12,6 +12,17 @@ H = hamiltonians.honeycomb(4,periodic=True) # get the Hamiltonian
 ```
 
 where the number denotes the lateral size of the system in log scale
+
+### Modifying the Hamiltonian
+By default the Hamiltonians are uniform in space. To add modulations in the
+hopping, you can modify the hoppings as
+
+```python
+H.modify_hopping(F)
+```
+
+where F is a function that is call with input the center of each bond, and returns
+a correction to that hopping that it is added to the Hamiltonian.
 
 ## Creating the selfconsistent object
 

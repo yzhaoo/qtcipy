@@ -8,7 +8,7 @@ def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
     to how the mean field is evolving"""
     from ..qtcidistance import qtci_error # the default error
     tol = qtci_error # default tol
-    tol = 1e-2 # start with this
+    tol = 1e-3 # start with this
     if "qtci_tol" in kwargs: # overwrite if it is given
         tol = kwargs["qtci_tol"] # target tolerance
     else: # not given
@@ -38,7 +38,7 @@ def get_default(v):
     """Return a default set of parameters for the QTCI"""
     qtci_kwargs = {"qtci_maxm":400} # reasonable guess
     qtci_kwargs["qtci_accumulative"] = True # accumulative mode
-    qtci_kwargs["qtci_tol"] = 1e-2 # initial tol
+    qtci_kwargs["qtci_tol"] = 1e-3 # initial tol
     return qtci_kwargs # return this
 
 
@@ -75,7 +75,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
         return SCF0.qtci_kwargs
     else: return SCF.qtci_kwargs # return this choice
 
-maxerror_dyn_qtci = 1e-2
+maxerror_dyn_qtci = 1e-3
 
 def dynamical_update(scf,use_dynamical_qtci=True,
         maxerror_dyn_qtci=maxerror_dyn_qtci, # max error for dynamical QTCI 
