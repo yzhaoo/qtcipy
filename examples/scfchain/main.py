@@ -4,7 +4,7 @@ sys.path.append(os.getcwd()+"/../../src")
 from qtcipy.tbscftk import hamiltonians
 import numpy as np
 
-L = 10 # exponential length
+L = 8 # exponential length
 H = hamiltonians.chain(L) # get the Hamiltonian
 
 def f(r):
@@ -37,7 +37,7 @@ SCF.solve(info=True,
 #print(SCF.qtci_kwargs)
 SCF.save()
 SCF = SCF.load()
-
+print(SCF.log["QTCI_eval"])
 print(SCF.qtci_kwargs)
 
 #print("Loading from file")

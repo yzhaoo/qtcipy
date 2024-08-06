@@ -139,9 +139,11 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
         else: # compute explicitly
             ddn = get_den(hdn,log=log0,**kwargs) # generate down density
             dup = get_den(hup,log=log0,**kwargs) # generate up density
-        error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
+        from .dynamicalmixing import get_distance
+        disf = get_distance() # get the distance function
+        error = disf(ddn,ddn_old) + disf(dup,dup_old) # compute the error
+#        error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs
-            log["opt_qtci_maxm"] = log0["opt_qtci_maxm"]
             log["SCF_time"].append(time.time() - t0) # store time
             log["SCF_error"].append(error) # store time
         if info: 
@@ -153,8 +155,8 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
         scf.Mz = mz # store magnetization
         scf.scf_error = error # store error
         dynamical_update(scf,info=info,**kwargs) # dynamical update of the QTCI if needed
-        dup_old = mix*dup_old + (1.-mix)*dup # update
-        ddn_old = mix*ddn_old + (1.-mix)*ddn # update
+        from .dynamicalmixing import dynamical_mixing_hubbard
+        dup_old,ddn_old = dynamical_mixing_hubbard(scf,[dup,ddn],[dup_old,ddn_old],mix=mix,**kwargs)
         # stopping criteria
         if error<maxerror: break # stop loop
         if maxite is not None:

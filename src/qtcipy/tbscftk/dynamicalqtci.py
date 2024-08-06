@@ -8,11 +8,12 @@ def get_qtci_kwargs(kwargs,v,scf_error=None,**kw):
     to how the mean field is evolving"""
     from ..qtcidistance import qtci_error # the default error
     tol = qtci_error # default tol
+    tol = 1e-2 # start with this
     if "qtci_tol" in kwargs: # overwrite if it is given
         tol = kwargs["qtci_tol"] # target tolerance
     else: # not given
         if scf_error is not None: # if given
-            tol = min([tol,scf_error/5.]) # overwrite
+            tol = min([tol,scf_error/2.]) # overwrite
     # obtain the optimal QTCI for this data
     frac,qtci_kwargs = optimal_qtci(v,qtci_error=tol,kwargs0=kwargs,
             qtci_error_factor = 1.01, # call again if needed with the same error
@@ -52,7 +53,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
     if "use_qtci" in kwargs:
         if not kwargs["use_qtci"]: return {}
     if SCF.qtci_kwargs is None: # first iteration
-        qtci_kwargs = {"qtci_maxm":400} # reasonable guess
+        qtci_kwargs = {"qtci_maxm":100} # reasonable guess
         qtci_kwargs["qtci_accumulative"] = True # accumulative mode
         qtci_kwargs["qtci_tol"] = 1e-1 # initial tol
         SCF0 = SCF.copy() # make a copy
