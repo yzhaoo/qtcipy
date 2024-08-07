@@ -147,13 +147,13 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
             print("SCF Error",error,"iteration",ite)
             print("Average magnetization",np.mean(np.abs(ddn-dup)))
             print("Max magnetization",np.max(np.abs(ddn-dup)))
-        mz = dup - ddn # magnetization
         from .dynamicalqtci import dynamical_update
-        scf.Mz = mz # store magnetization
         scf.scf_error = error # store error
         dynamical_update(scf,info=info,**kwargs) # dynamical update of the QTCI if needed
         from .dynamicalmixing import dynamical_mixing_hubbard
         dup_old,ddn_old = dynamical_mixing_hubbard(scf,[dup,ddn],[dup_old,ddn_old],mix=mix,**kwargs)
+        mz = dup_old - ddn_old # magnetization
+        scf.Mz = mz # store magnetization
         # stopping criteria
         if error<maxerror: break # stop loop
         if maxite is not None:

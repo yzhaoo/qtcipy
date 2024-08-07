@@ -40,6 +40,7 @@ def dynamical_mixing_hubbard(SCF,dnew,dold,mix=0.5,
                 print("Error has increased, use conservative mixing")
                 # overwrite the last error
                 mix_c = 1e-3 # highly conservative mixing
+                mix_c = min([1e-3,SCF.log["SCF_error"][-1]/10]) # dynamical mixing
                 dout = mix_den(1.-mix_c) # normal mixing
                 derr = error_hubbard(dout,dold) # new error correction
                 SCF.log["SCF_error"][-1] = derr + SCF.log["SCF_error"][-2]
