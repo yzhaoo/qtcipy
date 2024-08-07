@@ -137,9 +137,8 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
         else: # compute explicitly
             ddn = get_den(hdn,log=log0,**kwargs) # generate down density
             dup = get_den(hup,log=log0,**kwargs) # generate up density
-        from .dynamicalmixing import get_distance
-        disf = get_distance() # get the distance function
-        error = disf(ddn,ddn_old) + disf(dup,dup_old) # compute the error
+        from .dynamicalmixing import error_hubbard
+        error = error_hubbard([dup,ddn],[dup_old,ddn_old]) # compute error
 #        error = np.mean(np.abs(ddn-ddn_old) + np.abs(dup-dup_old)) # error
         if log is not None: # do the logs
             log["SCF_time"].append(time.time() - t0) # store time

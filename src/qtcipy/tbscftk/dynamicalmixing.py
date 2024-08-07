@@ -3,6 +3,16 @@ import numpy as np
 from ..qtcidistance import get_distance 
 
 
+def error_hubbard(dnew,dold):
+    """Compute the error of the Hubbard mean-field"""
+    dup,ddn = dnew[0],dnew[1]
+    dup_old,ddn_old = dold[0],dold[1]
+    disf = get_distance() # get the distance function
+    error = disf(ddn,ddn_old) + disf(dup,dup_old) # compute the error
+    return error # return the error
+
+
+
 
 def dynamical_mixing_hubbard(SCF,dnew,dold,mix=0.5,
         mixing_strategy="failsafe",**kwargs):
@@ -28,8 +38,12 @@ def dynamical_mixing_hubbard(SCF,dnew,dold,mix=0.5,
                 return mix_den(mix)
             else: # use the backup mixing
                 print("Error has increased, use conservative mixing")
-                mix_c = 1e-2 # highly conservative mixing
-                return mix_den(1.-mix_c) # normal mixing
+                # overwrite the last error
+                mix_c = 1e-3 # highly conservative mixing
+                dout = mix_den(1.-mix_c) # normal mixing
+                derr = error_hubbard(dout,dold) # new error correction
+                SCF.log["SCF_error"][-1] = derr + SCF.log["SCF_error"][-2]
+                return dout
         else: # for first iteations just mix normally 
             return mix_den(mix)
     else: raise # not implemented
