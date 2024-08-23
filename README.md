@@ -11,7 +11,8 @@ Some of the examples use the library for electronic structure [pyqula](https://g
 # Installation
 
 You need to have Julia installed in your computer.
-Afterwards, execute "python install.py" in the current directory
-
+Afterwards, execute "python install.py" in the current directory.
 Julia needs to be in your PATH, as the code will use the output of "which julia"
 
+If you want simply install the C++ version, you can use
+python install_cpp.py
