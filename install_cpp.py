@@ -5,6 +5,7 @@ from qtcipy import install
 
 
 install.install_xfac() # install the Python libraries locally
+#install.install_xfac(openblas=True) # for Triton
 #install.install_pylibs() # install the Python libraries locally
 
 

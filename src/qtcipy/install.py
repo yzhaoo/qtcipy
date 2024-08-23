@@ -46,7 +46,7 @@ def install_pylibs():
 
 
 
-def install_xfac():
+def install_xfac(openblas=False):
     """Install the xfacpy library"""
     pwd0 = os.getcwd() # initial path
     path = os.path.dirname(os.path.realpath(__file__)) # this location
@@ -55,7 +55,10 @@ def install_xfac():
     os.chdir(pylibpath) # go to the folder
     os.system("git clone https://github.com/tensor4all/xfac")
     os.chdir(pylibpath+"/xfac") # go to the folder
-    os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
+    if openblas: # environment uses openblas (like tritoon)
+        os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON -D OPENBLAS_PROVIDES_LAPACK=true")
+    else: # usual lapack
+        os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
     os.chdir(pylibpath+"/xfac/build/python") # go to the folder
     os.system("make")
     os.chdir(pwd0) # go back
