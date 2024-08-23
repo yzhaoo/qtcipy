@@ -57,5 +57,6 @@ def install_xfac():
     os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
     os.chdir(pylibpath+"/build/python") # go to the folder
     os.system("make")
+    os.chdir(pwd0) # go back
 
 
