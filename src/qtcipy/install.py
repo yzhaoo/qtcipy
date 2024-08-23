@@ -51,7 +51,7 @@ def install_xfac():
     pwd0 = os.getcwd() # initial path
     path = os.path.dirname(os.path.realpath(__file__)) # this location
     pylibpath = path + "/pylib"
-    os.system("mkdir -f "+pylibpath) # create folder
+    os.system("mkdir "+pylibpath) # create folder
     os.chdir(pylibpath) # go to the folder
     os.system("git clone https://github.com/tensor4all/xfac")
     os.chdir(pylibpath+"/xfac") # go to the folder
