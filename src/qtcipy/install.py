@@ -53,10 +53,10 @@ def install_xfac():
     pylibpath = path + "/pylib"
     os.system("mkdir "+pylibpath) # create folder
     os.chdir(pylibpath) # go to the folder
-    os.system("git clone https://github.com/tensor4all/xfac")
-    os.chdir(pylibpath+"/xfac") # go to the folder
-    os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
-    os.chdir(pylibpath+"/build/python") # go to the folder
+#    os.system("git clone https://github.com/tensor4all/xfac")
+#    os.chdir(pylibpath+"/xfac") # go to the folder
+#    os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
+    os.chdir(pylibpath+"/xfac/build/python") # go to the folder
     os.system("make")
     os.chdir(pwd0) # go back
 
