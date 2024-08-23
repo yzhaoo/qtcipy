@@ -18,5 +18,5 @@ install.install_pylibs() # install the Python libraries locally
 # compile as
 # cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON -D OPENBLAS_PROVIDES_LAPACK=true
 # cd build/python
-# cmake
+# make
 

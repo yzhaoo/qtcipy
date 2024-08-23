@@ -46,3 +46,16 @@ def install_pylibs():
 
 
 
+def install_xfac():
+    """Install the xfacpy library"""
+    pwd0 = os.getcwd() # initial path
+    path = os.path.dirname(os.path.realpath(__file__)) # this location
+    pylibpath = path + "/pylib"
+    os.chdir(pylibpath) # go to the folder
+    os.system("git clone https://github.com/tensor4all/xfac")
+    os.chdir(pylibpath+"/xfac") # go to the folder
+    os.system("cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D XFAC_BUILD_PYTHON=ON")
+    os.chdir(pylibpath+"/build/python") # go to the folder
+    os.system("make")
+
+
