@@ -29,7 +29,7 @@ SCF.solve(info=True,
         info_qtci = True,
 #        maxite = 7,
         delta= 1e-3,
-#        use_dynamical_qtci = False,
+        use_dynamical_qtci = True,
         backend = "C++",
         chiral_AF = True, # use symmetry for chiral models
         ) # solve the SCF

@@ -75,7 +75,8 @@ def get_frac_args(v,qtci_error=1e-3,**kwargs):
     """Get the fraction with a certain set of parameters"""
     nb = get_nbits(v,**kwargs)
     lim = get_lim(v,**kwargs)
-    vi = v + qtci_error/100*(np.random.random()-0.5) # add noise
+    if np.mean(np.abs(v))<qtci_error/100: return 1.,None # flat distribution
+    vi = v + qtci_error/100*(np.random.random(len(v))-0.5) # add noise
     f = lambda i: vi[int(i)] # function
     IP = get_interpolator(f,nb,lim,**kwargs) 
     from .qtcidistance import get_distance

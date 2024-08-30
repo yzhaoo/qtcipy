@@ -32,6 +32,7 @@ class Interpolator():
         ######
         self.f = memoize(fk) # memoize
         # initialize the pivot
+        ip = 0
         while True: # select pivot
             if qtci_pivot1 is None: # if pivot is None
                 r = np.random.random()*(xlim[1]-xlim[0]) + xlim[0] # random point
@@ -39,6 +40,8 @@ class Interpolator():
             r = qgrid.id_to_coord(qtci_pivot1) # to coordinate
             y = self.f(r[0]) # compute
             if np.abs(y)>1e-8: break
+            ip+=1
+            if ip>1e4: raise # error
             print("Choosing another pivot",r,y)
             qtci_pivot1 = None # set to None
         ###############
