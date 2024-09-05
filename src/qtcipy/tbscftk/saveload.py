@@ -36,7 +36,7 @@ def dict2SCF(objs):
     """Create an SCF object from a dictionary"""
     from .scf import SCF_Hubbard
     H0 = dict2H(objs["H0"]) # initial Hamiltonian
-    SCF = SCF_Hubbard(H0) # create the object
+    SCF = SCF_Hubbard(H0,U_profile=None) # create the object
     SCF.U = objs["U"] # Hubbard
     SCF.H = [objs["H"][0],objs["H"][1]] # mean field Hamil.
     SCF.log = objs["log"]

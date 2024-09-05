@@ -4,7 +4,7 @@ import numpy as np
 
 class SCF_Hubbard():
     """Class to perform selfconsistency"""
-    def __init__(self,H,MF=None,U=0.):
+    def __init__(self,H,MF=None,U=0.,**kwargs):
         """Initialize the SCF object"""
         self.H0 = H # store initial Hamiltonian
         self.H = [H.H.copy(),H.H.copy()] # store initial Hamiltonian
@@ -14,7 +14,7 @@ class SCF_Hubbard():
             MF = [dup0,ddn0] # store
         self.MF = MF # store the mean-field guess
         self.qtci_kwargs = None # options for QTCI
-        set_Hubbard(self,U) # set the Hubbard
+        set_Hubbard(self,U,**kwargs) # set the Hubbard
 #        self.U = U # Hubbard interaction 
         self.Mz = MF[0]*0. # magnetization
         log = dict() # dictionary

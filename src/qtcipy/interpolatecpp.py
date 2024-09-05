@@ -14,6 +14,7 @@ class Interpolator():
     def __init__(self,f,xlim=[0.,1.],nb=20,
         qtci_maxm=100, # initial bond dimension
         qtci_accumulative = False,
+        max_pivot0_tries = 100,
         qtci_tol = 1e-3,
         qtci_kernel = {}, # no kernel provided
         qtci_pivot1 = None,
@@ -41,7 +42,7 @@ class Interpolator():
             y = self.f(r[0]) # compute
             if np.abs(y)>1e-8: break
             ip+=1
-            if ip>1e4: raise # error
+            if ip>max_pivot0_tries: raise # error
             print("Choosing another pivot",r,y)
             qtci_pivot1 = None # set to None
         ###############
