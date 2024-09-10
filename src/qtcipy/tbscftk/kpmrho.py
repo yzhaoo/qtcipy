@@ -104,6 +104,23 @@ def get_mz_kpm_qtci(h,log=None,**kwargs):
 
 
 
+def get_profile_qtci(h,f,log=None,**kwargs):
+    """Return the magnetization of the system uisng KPM and QTCI"""
+    nb = get_nbits(h,**kwargs) # return the number of bits
+    lim = get_lim(h,**kwargs) # get the limits
+    IP = get_interpolator(h,f,nb,lim,
+            **kwargs) # keyword arguments
+    update_log(log,h,IP,**kwargs) # update the log
+    out = evaluate_interpolator(h,IP,**kwargs) # evaluate the interpolator
+    return np.array(out) # return the output magnetization
+
+
+
+
+
+
+
+
 
 
 def evaluate_interpolator(h,IP,dim=1,**kwargs):

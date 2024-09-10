@@ -40,9 +40,15 @@ def get_den_ed(h,fermi=0.,**kwargs):
 
 
 
-def get_mz_ed(h,**kwargs):
+def get_mz_ed(h,use_qtci=False,**kwargs):
     """Magnetization for chiral systems"""
-    return (get_den_ed(h,**kwargs) - 0.5)*2 # magnetization
+    if use_qtci: # with QTCI, not practical but good for testing
+        mz = (get_den_ed(h,**kwargs) - 0.5)*2 # magnetization
+        def f(i): return mz[int(i)]
+        from .kpmrho import get_profile_qtci
+        return get_profile_qtci(h,f,**kwargs) # return the QTCI interpolated magnetization
+    else: # brute force
+        return (get_den_ed(h,**kwargs) - 0.5)*2 # magnetization
 
 
 
