@@ -53,9 +53,9 @@ def initial_qtci_kwargs(SCF,**kwargs):
     if "use_qtci" in kwargs:
         if not kwargs["use_qtci"]: return {}
     if SCF.qtci_kwargs is None: # first iteration
-        qtci_kwargs = {"qtci_maxm":100} # reasonable guess
+        qtci_kwargs = {"qtci_maxm":400} # reasonable guess
         qtci_kwargs["qtci_accumulative"] = True # accumulative mode
-        qtci_kwargs["qtci_tol"] = 1e-1 # initial tol
+        qtci_kwargs["qtci_tol"] = 1e-3 # initial tol
         SCF0 = SCF.copy() # make a copy
         SCF0.qtci_kwargs = qtci_kwargs # overwrite
         kw = cp(kwargs) # make a copy
@@ -65,6 +65,7 @@ def initial_qtci_kwargs(SCF,**kwargs):
         kw["use_kpm"] = True
         kw["backend"] = "C++"
         kw["info"] = False
+        kw["info_qtci"] = False
         kw["maxite"] = 1 # one iteration
         mz = SCF0.H0.get_moire()*SCF0.MF[0] # make a guess
         # get some kwargs
