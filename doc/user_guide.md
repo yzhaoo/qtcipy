@@ -13,7 +13,7 @@ H = hamiltonians.honeycomb(5,periodic=True) # get the Hamiltonian
 
 where the number denotes the lateral size of the system in log scale.
 For example, in the chain "8" leads to a system fo 2^8 sitees, whereas
-in the honeycomb lattice "5" leads to a system with 4*2^(5*2) sites
+in the honeycomb lattice "5" leads to a system with $$4*2^(5*2)$$ sites
 
 ### Modifying the Hamiltonian
 By default the Hamiltonians are uniform in space. To add modulations in the
