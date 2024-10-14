@@ -4,7 +4,7 @@
 import numpy as np
 import sys
 import os
-sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+#sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 
 from .kpmrho import get_density_i
@@ -173,10 +173,14 @@ def SCF_Hubbard(scf,maxerror=1e-3,maxite=None,
         log["QTCI_eval"] += ev # store
         log["QTCI_error"] += qterr # store
     # convert to single (real) precision
-    hup = hup.astype(np.float32)
-    hdn = hdn.astype(np.float32)
-    dup = dup.astype(np.float32)
-    ddn = ddn.astype(np.float32)
+    hup = hup.astype(np.complex_)
+    hdn = hdn.astype(np.complex_)
+    dup = dup.astype(np.complex_)
+    ddn = ddn.astype(np.complex_)
+    # hup = hup.astype(np.float32)
+    # hdn = hdn.astype(np.float32)
+    # dup = dup.astype(np.float32)
+    # ddn = ddn.astype(np.float32)
     # update the SCF object
     scf.H[0] = hup.copy() # replace matrix
     scf.H[1] = hdn.copy() # replace matrix

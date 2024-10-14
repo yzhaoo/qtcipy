@@ -1,6 +1,6 @@
 import os ; import sys
 sys.path.append(os.getcwd()+"/../../src")
-sys.path.append(os.environ["PYQULAROOT"])
+#sys.path.append(os.environ["PYQULAROOT"])
 
 from qtcipy.tbscftk import hamiltonians
 import numpy as np

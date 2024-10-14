@@ -63,7 +63,22 @@ def matrix2array(H):
 
 
 
-
+# def chain(L):
+#     """Hamiltonian of a chain"""
+#     # define a first neighbor tight binding model
+#     n = 2**L # number of sites
+#     rows,cols = np.array(np.arange(0,n-1)),np.array(np.arange(1,n)) # indexes
+#     data = np.zeros(n-1,dtype=np.csingle) # hopping 1 for all
+#     data[:] = 1.0 # initialize
+#     from scipy.sparse import csc_matrix
+#     h0 = csc_matrix((data,(rows,cols)),shape=(n,n),dtype=np.csingle) # create single particle hopping
+#     h0 = h0 + h0.T # add the transpose
+#     r = np.zeros((n,2),dtype=np.csingle) # initialize
+#     r[:,0] = np.arange(n) # locations
+#     AB = np.array(np.arange(0,n))%2 # parity
+#     AB = AB*2 - 1. # +- 1
+#     H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
+#     return H # return the Hamiltonian
 def chain(L):
     """Hamiltonian of a chain"""
     # define a first neighbor tight binding model
@@ -161,7 +176,7 @@ def modify_hopping(self,f,use_dr=False,**kwargs):
         ii = mo.row[i] # get this row
         jj = mo.col[i] # get this column
         d = mo.data[i] # get this data
-        r = (R[ii] + R[jj])/2. # average location
+        r = (R[ii] + R[jj])/2. # average location of the hopping
         if use_dr:
             dr = R[ii] - R[jj] # distance
             d1 = d + f(r,dr) # add a contribution
@@ -195,11 +210,20 @@ def honeycomb(L,periodic=False):
     n = 2**L # number of unit cells
     row,col,data = hopping_honeycomb(n,periodic=periodic) # return the hoppings
     from scipy.sparse import csc_matrix
-    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.float32) # create single particle hopping
+    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # create single particle hopping
     r,AB = position_honeycomb(n) # return the positions for square lattice
     H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
     return H # return the Hamiltonian
 
+def honeycomb_mag(L,phi=0.01,periodic=False):
+    """Hamiltonian with perpendicular magnetic field"""
+    n = 2**L # number of unit cells
+    row,col,data = hopping_honeycomb_mag(n,phi=phi,periodic=periodic) # return the hoppings
+    from scipy.sparse import csc_matrix
+    h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # create single particle hopping
+    r,AB = position_honeycomb(n) # return the positions for square lattice
+    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
+    return H # return the Hamiltonian
 
 
 # Hopping for the square lattice
@@ -209,7 +233,7 @@ def hopping_honeycomb(N,periodic=False):
     count = 0 # counter
     row = np.zeros(4*3*N**2,dtype=np.int_) # index
     col = np.zeros(4*3*N**2,dtype=np.int_) # index
-    data = np.zeros(4*3*N**2,dtype=np.float32) # index
+    data = np.zeros(4*3*N**2,dtype=np.complex_) # index
     for i1 in range(N): # loop over x unit cell index
       for j1 in range(N): # loop over y unit cell index
           ind1 = i1*N + j1 # index for the first UC 
@@ -239,7 +263,78 @@ def hopping_honeycomb(N,periodic=False):
     col = col[0:count] # only those stored
     data = data[0:count] # only those stored
     return row,col,data # return rows,cols and data
+##add magnetic field through peiers phase#####
+@jit(nopython=True)
+def hopping_honeycomb_mag(N, phi=0.01, periodic=False):
+    """Return hopping for the honeycomb lattice"""
+    count = 0  # counter
+    row = np.zeros(4 * 3 * N**2, dtype=np.int_)  # index
+    col = np.zeros(4 * 3 * N**2, dtype=np.int_)  # index
+    data = np.zeros(4 * 3 * N**2, dtype=np.complex_)  # index
+    a1 = np.array([3., 0.])  # shift in x
+    a2 = np.array([0., np.sqrt(3.)])  # shift in y
+    
+    for i1 in range(N):  # loop over x unit cell index
+        for j1 in range(N):  # loop over y unit cell index
+            dr = float(i1) * a1 + float(j1) * a2  # shift  
 
+            # Simplify operations
+            temp1 = dr + np.array([2.0, 0.0])
+            temp2 = dr + a2 / 2. + np.array([1.5, 0.0])
+            temp3 = dr + a2 / 2. + np.array([0.5, 0.0])
+
+            # Convert xcoor into a NumPy array
+            xcoor = np.array([dr[0], temp3[0], temp2[0], temp1[0]])
+
+            ind1 = i1 * N + j1  # index for the first UC
+
+            for di, dj in [[0, 0], [-1, 0], [1, 0], [0, 1], [0, -1]]:  # loop over neighboring unit cells
+                i2 = i1 + di
+                j2 = j1 + dj
+                if periodic:  # periodic boundary conditions
+                    i2 = i2 % N
+                    j2 = j2 % N
+
+                ind2 = i2 * N + j2  # index for the second UC
+                
+                if 0 <= i2 < N and 0 <= j2 < N:  # no overflow of unit cells
+                    # Onsite case
+                    if di == 0 and dj == 0:
+                        pairs = np.array([[0, 1], [1, 0], [1, 2], [2, 1], [2, 3], [3, 2]])  # onsite
+                        xspaces = np.array([xcoor[1] - xcoor[0], xcoor[0] - xcoor[1], xcoor[2] - xcoor[1],
+                                            xcoor[1] - xcoor[2], xcoor[3] - xcoor[2], xcoor[2] - xcoor[3]])
+                        hops = np.exp(1j * 2 * np.pi * phi * xspaces)
+
+                    if di == 1 and dj == 0:
+                        pairs = np.array([[3, 0]])
+                        hops = np.array([np.exp(1j * 2 * np.pi * phi * 1)])
+
+                    if di == -1 and dj == 0:
+                        pairs = np.array([[0, 3]])
+                        hops = np.array([np.exp(1j * 2 * np.pi * phi * -1)])
+
+                    if di == 0 and dj == 1:
+                        pairs = np.array([[1, 0], [2, 3]])
+                        hops = np.exp(1j * 2 * np.pi * phi * np.array([xcoor[0] - xcoor[1], xcoor[3] - xcoor[2]]))
+
+                    if di == 0 and dj == -1:
+                        pairs = np.array([[0, 1], [3, 2]])
+                        hops = np.exp(1j * 2 * np.pi * phi * np.array([xcoor[1] - xcoor[0], xcoor[2] - xcoor[3]]))
+
+                    plen = len(pairs)
+                    for ii in range(plen):  # store the pairs
+                        o1, o2 = pairs[ii]
+                        row[count] = 4 * ind1 + o1  # store index
+                        col[count] = 4 * ind2 + o2  # store index
+                        data[count] = hops[ii]  # store hopping
+                        count += 1  # increase counter
+    
+    # Slice only stored data
+    row = row[:count]
+    col = col[:count]
+    data = data[:count]
+
+    return row, col, data  # return rows, cols, and data
 
 # position for the square lattice
 @jit(nopython=True)

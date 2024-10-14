@@ -6,7 +6,7 @@
 import numpy as np
 import sys
 import os
-sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+#sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 
 def get_density_i_from_dos(m,fermi=0.,**kwargs):
@@ -225,7 +225,7 @@ def get_function(h,dim=1,**kwargs):
 
 
 import os ; import sys
-sys.path.append(os.environ["PYQULAROOT"]) # pyqula
+#sys.path.append(os.environ["PYQULAROOT"]) # pyqula
 
 from pyqula.kpmtk.bandwidth import estimate_bandwidth
 from pyqula import kpm
