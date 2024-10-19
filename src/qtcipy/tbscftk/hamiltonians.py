@@ -3,19 +3,22 @@ from numba import jit
 
 class Hamiltonian():
     """Class for a Hamiltonian"""
-    def __init__(self,dim=1,H=None,R=None,AB=None):
+    def __init__(self,dim=1,H=None,R=None,AB=None,Hhop=None):
         """Class for a Hamiltonian"""
         self.dim = 1 # dimensionality
         self.H = H # matrix
         self.R = R - np.mean(R,axis=0) # center in 0
         self.AB = AB # sublattice
         self.norb = 1 # single orbital
+        self.Hop=Hhop
     def get_SCF_Hubbard(self,**kwargs):
         """Return the SCF object"""
         from .scf import SCF_Hubbard
         return SCF_Hubbard(self,**kwargs)
     def modify_hopping(self,*args,**kwargs):
         return modify_hopping(self,*args,**kwargs)
+    def get_hopping_pos(self,N):
+        return position_honeycomb_hop(N)
     def add_onsite(self,*args,**kwargs):
         return add_onsite(self,*args)
     def get_density_i(self,**kwargs):
@@ -188,7 +191,7 @@ def modify_hopping(self,f,use_dr=False,**kwargs):
 
 
 def add_onsite(self,f):
-    """Add an onsite energy tot he Hamiltonian"""
+    """Add an onsite energy to the Hamiltonian"""
     n = self.H.shape[0]
     rows,cols = np.array(range(n)),np.array(range(n)) # indexes
     data = np.array([f(ri) for ri in self.R],dtype=np.float32) 
@@ -219,10 +222,11 @@ def honeycomb_mag(L,phi=0.01,periodic=False):
     """Hamiltonian with perpendicular magnetic field"""
     n = 2**L # number of unit cells
     row,col,data = hopping_honeycomb_mag(n,phi=phi,periodic=periodic) # return the hoppings
-    from scipy.sparse import csc_matrix
+    from scipy.sparse import csc_matrix,coo_matrix
     h0 = csc_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # create single particle hopping
+    hhop=coo_matrix((data,(row,col)),shape=(4*n**2,4*n**2),dtype=np.complex_) # use for checking modification in hopping
     r,AB = position_honeycomb(n) # return the positions for square lattice
-    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB) # create Hamiltonian
+    H = Hamiltonian(dim=1,H=h0,R=r,AB=AB,Hhop=hhop) # create Hamiltonian
     return H # return the Hamiltonian
 
 
@@ -301,39 +305,41 @@ def hopping_honeycomb_mag(N, phi=0.01, periodic=False):
                     # Onsite case
                     if di == 0 and dj == 0:
                         pairs = np.array([[0, 1], [1, 0], [1, 2], [2, 1], [2, 3], [3, 2]])  # onsite
-                        xspaces = np.array([xcoor[1] - xcoor[0], xcoor[0] - xcoor[1], xcoor[2] - xcoor[1],
-                                            xcoor[1] - xcoor[2], xcoor[3] - xcoor[2], xcoor[2] - xcoor[3]])
-                        hops = np.exp(1j * 2 * np.pi * phi * xspaces)
-
-                    if di == 1 and dj == 0:
+                        xspaces = np.array([xcoor[0], -xcoor[0], xcoor[1], -xcoor[1], xcoor[2], -xcoor[2]])
+                        #print(xspaces)
+                        hops = np.exp(-1j * 2 * np.pi * phi * xspaces)
+                        #print(hops)
+                    elif di == 1 and dj == 0:
                         pairs = np.array([[3, 0]])
-                        hops = np.array([np.exp(1j * 2 * np.pi * phi * 1)])
+                        hops = np.array([np.exp(-1j * 2 * np.pi * phi * xcoor[3])])
 
-                    if di == -1 and dj == 0:
+                    elif di == -1 and dj == 0:
                         pairs = np.array([[0, 3]])
-                        hops = np.array([np.exp(1j * 2 * np.pi * phi * -1)])
+                        hops = np.array([np.exp(-1j * 2 * np.pi * phi * (-(xcoor[0]-1)))])
 
-                    if di == 0 and dj == 1:
+                    elif di == 0 and dj == 1:
                         pairs = np.array([[1, 0], [2, 3]])
-                        hops = np.exp(1j * 2 * np.pi * phi * np.array([xcoor[0] - xcoor[1], xcoor[3] - xcoor[2]]))
+                        hops = np.exp(-1j * 2 * np.pi * phi * np.array([-xcoor[0], xcoor[2]]))
 
-                    if di == 0 and dj == -1:
+                    elif di == 0 and dj == -1:
                         pairs = np.array([[0, 1], [3, 2]])
-                        hops = np.exp(1j * 2 * np.pi * phi * np.array([xcoor[1] - xcoor[0], xcoor[2] - xcoor[3]]))
+                        hops = np.exp(-1j * 2 * np.pi * phi * np.array([xcoor[0], -xcoor[2]]))
 
                     plen = len(pairs)
+                    #print(pairs,ind1,ind2)
                     for ii in range(plen):  # store the pairs
                         o1, o2 = pairs[ii]
                         row[count] = 4 * ind1 + o1  # store index
                         col[count] = 4 * ind2 + o2  # store index
                         data[count] = hops[ii]  # store hopping
+                        #print(row[count],col[count],data[count])
                         count += 1  # increase counter
-    
+    #print(row)
     # Slice only stored data
     row = row[:count]
     col = col[:count]
     data = data[:count]
-
+    #print(row)
     return row, col, data  # return rows, cols, and data
 
 # position for the square lattice
@@ -357,6 +363,73 @@ def position_honeycomb(N):
           count += 1 # increase counter
     return r,AB
 
+@jit(nopython=True)
+def position_honeycomb_hop(N,periodic=False):
+    """Return position of the hopping for the honeycomb lattice"""
+    count =0
+    counth=0
+    rhop = np.zeros((12*N**2,2),dtype=np.float32)
+    a1 = np.array([3., 0.])  # shift in x
+    a2 = np.array([0., np.sqrt(3.)])  # shift in y
+    dshift=0.05
+    for i1 in range(N):  # loop over x unit cell index
+        for j1 in range(N):  # loop over y unit cell index
+            dr = float(i1) * a1 + float(j1) * a2  # shift  
+            for di, dj in [[0,0],[-1, 0], [1, 0], [0, 1], [0, -1]]:  # loop over neighboring unit cells
+                i2 = i1 + di
+                j2 = j1 + dj
+                if periodic:  # periodic boundary conditions
+                    i2 = i2 % N
+                    j2 = j2 % N
+                if 0 <= i2 < N and 0 <= j2 < N:  # no overflow of unit cells
+                    if di == 0 and dj == 0:# onsite
+                        rhop[12*counth]=dr+np.array([0.25,np.sqrt(3)/4])+1*dshift*np.array([np.sqrt(3),-1])
+                        rhop[12*counth+1]=dr+np.array([0.25,np.sqrt(3)/4])+1*dshift*np.array([-np.sqrt(3),1])
+
+                        rhop[12*counth+2]=dr+np.array([1.,np.sqrt(3)/2])+dshift*np.array([0,-2])
+                        rhop[12*counth+3]=dr+np.array([1.,np.sqrt(3)/2])+dshift*np.array([0,2])
+
+                        rhop[12*counth+4]=dr+np.array([1.75,np.sqrt(3)/4])+dshift*np.array([-np.sqrt(3),-1])
+                        rhop[12*counth+5]=dr+np.array([1.75,np.sqrt(3)/4])+dshift*np.array([np.sqrt(3),1])
+                        count+=6
+                    if di == 1 and dj == 0:
+                        rhop[12*counth+6]=dr+np.array([2.5,0])+dshift*np.array([0,-2])
+                        count+=1
+                    if di == -1 and dj == 0:
+                        rhop[12*counth+7]=dr+np.array([-0.5,0])+dshift*np.array([0,2])
+                        count+=1
+                    if di == 0 and dj == 1:
+                        rhop[12*counth+8]=dr+np.array([0.25,0.75*np.sqrt(3)])+dshift*np.array([np.sqrt(3),1])
+                        rhop[12*counth+9]=dr+np.array([1.75,0.75*np.sqrt(3)])+dshift*np.array([np.sqrt(3),-1])
+                        count+=2
+                    if di == 0 and dj == -1:
+                        rhop[12*counth+10]=dr+np.array([0.25,-np.sqrt(3)/4])+dshift*np.array([-np.sqrt(3),-1])
+                        #print(12*counth+10)
+                        #print(dr+np.array([0.25,-0.75*np.sqrt(3)])+0*dshift*np.array([-np.sqrt(3),-1]))
+                        rhop[12*counth+11]=dr+np.array([1.75,-np.sqrt(3)/4])+dshift*np.array([-np.sqrt(3),1])
+                        count+=2
+  # increase counter
+            counth+=1
+    # remove 0 entry
+    # Define the target entry to delete
+    def delete_entry(arr, target):
+    # Create a list to store indices that we want to keep
+        result = []
+        
+        # Iterate over each row in the array
+        for i in range(arr.shape[0]):
+            # Manually check if the row matches the target
+            if not (arr[i, 0] == target[0] and arr[i, 1] == target[1]):
+                # If it doesn't match, add it to the result
+                result.append(arr[i])
+        
+        # Convert the result back to a NumPy array
+        return result
+
+    target = np.array([0., 0.])
+
+    #return rhop after removing the 0 entries
+    return delete_entry(rhop,target)
 def index_around_r(R0,r=[0.,0.],dr=1.0):
     R = R0.copy() # make a copy
     R[:,0] -= r[0] # center
