@@ -305,25 +305,31 @@ def hopping_honeycomb_mag(N, phi=0.01, periodic=False):
                     # Onsite case
                     if di == 0 and dj == 0:
                         pairs = np.array([[0, 1], [1, 0], [1, 2], [2, 1], [2, 3], [3, 2]])  # onsite
-                        xspaces = np.array([xcoor[0], -xcoor[0], xcoor[1], -xcoor[1], xcoor[2], -xcoor[2]])
+                        #xspaces = np.array([xcoor[0], -xcoor[0], xcoor[1], -xcoor[1], xcoor[2], -xcoor[2]])
+                        xspaces = np.array([0,0,0,0,xcoor[2], -xcoor[2]])
                         #print(xspaces)
                         hops = np.exp(-1j * 2 * np.pi * phi * xspaces)
                         #print(hops)
                     elif di == 1 and dj == 0:
                         pairs = np.array([[3, 0]])
-                        hops = np.array([np.exp(-1j * 2 * np.pi * phi * xcoor[3])])
+                        #hops = np.array([np.exp(-1j * 2 * np.pi * phi *0* xcoor[3])])
+                        hops = np.array([1.+0.j])
 
                     elif di == -1 and dj == 0:
                         pairs = np.array([[0, 3]])
-                        hops = np.array([np.exp(-1j * 2 * np.pi * phi * (-(xcoor[0]-1)))])
+                        #hops = np.array([np.exp(-1j * 2 * np.pi * phi * (-(0*xcoor[0]-1)))])
+                        hops = np.array([1.+0.j])
 
                     elif di == 0 and dj == 1:
                         pairs = np.array([[1, 0], [2, 3]])
-                        hops = np.exp(-1j * 2 * np.pi * phi * np.array([-xcoor[0], xcoor[2]]))
+                        #hops = np.exp(-1j * 2 * np.pi * phi * np.array([-xcoor[0], 0*xcoor[2]]))
+                        hops = np.array([np.exp(-1j*2*np.pi*phi*(-xcoor[0])),1.+0.j])
+                        
 
                     elif di == 0 and dj == -1:
                         pairs = np.array([[0, 1], [3, 2]])
-                        hops = np.exp(-1j * 2 * np.pi * phi * np.array([xcoor[0], -xcoor[2]]))
+                        #hops = np.exp(-1j * 2 * np.pi * phi * np.array([xcoor[0], -0*xcoor[2]]))
+                        hops = np.array([np.exp(-1j*2*np.pi*phi*(xcoor[0])),1.+0.j])
 
                     plen = len(pairs)
                     #print(pairs,ind1,ind2)
